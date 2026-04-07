@@ -4,7 +4,7 @@ body {
     height: 100%;
     margin: 0;
     padding: 0;
-    background: no-repeat center center fixed url('../hubble_m_61.jpg'), black;
+    background: lightgray;
 }
 
 #center {
@@ -28,10 +28,8 @@ body {
     min-width: 0;
     position: relative;
     flex-basis: 300px;
-}
-
-#right-bar .container {
-    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 #right-bar textarea {
@@ -58,77 +56,47 @@ h3,
 h4,
 h5,
 h6 {
-    color: var(--gc-primary);
+    color: gold;
     font-family: 'Arial', sans-serif;
-    text-shadow: 0 0 5px rgba(212, 165, 116, 0.5);
+    text-shadow: 0 0 5px rgba(0, 0, 0, 1);
 }
 
-/* Top Banner */
-.top-banner {
-    z-index: 9999;
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    border-radius: 9999px;
-    align-items: center;
-    justify-content: center;
+/* Containers and Sections */
+
+.container {
+    padding: 0.5rem;
 }
 
-/* Tooltip container */
-.tooltip {
-    position: relative;
-    display: inline-block;
-    border-bottom: 1px dotted black;
-    /* If you want dots under the hoverable text */
+.section {
+    padding: 0.5rem;
+    border-bottom: 1px solid black;
 }
 
-/* Tooltip text */
-.tooltip .tooltiptext {
-    visibility: hidden;
-    width: 250px;
-    background-color: black;
-    color: #fff;
-    text-align: center;
-    padding: 5px 0;
-    border-radius: 6px;
-    /* Position the tooltip text - see examples below! */
-    position: absolute;
-    z-index: 1;
-    top: -5px;
-    right: 105%;
+.section:last-of-type {
+    border-bottom: none;
 }
 
-/* Show the tooltip text when you mouse over the tooltip container */
-.tooltip:hover .tooltiptext {
-    visibility: visible;
+/* Labels */
+.flex .label {
+    padding: 0 0.25rem;
+    font-weight: bold;
+    font-style: italic;
+    border: 1px solid black;
+    background-color: lightgray;
 }
 
 /* Drowpdown container */
 .dropdown {
     position: relative;
-    display: inline-block;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
-    z-index: 1;
+    padding: 0.5rem;
+    z-index: 10;
+    border: 1px solid #666;
     border-radius: 5px;
-    min-width: 160px;
-}
-
-.dropdown-content a {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
-}
-
-.dropdown-content a:hover {
-    text-decoration: underline;
-    font-weight: bold;
 }
 
 .dropdown:hover .dropdown-content {
@@ -139,31 +107,19 @@ h6 {
     display: block;
 }
 
-/* Messages */
-.message {
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 15px;
+.dropdown-content div {
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content div:hover {
+    text-decoration: underline;
     font-weight: bold;
 }
 
-.message.success {
-    background: rgba(46, 204, 113, 0.3);
-    border: 1px solid #2ecc71;
-    color: #2ecc71;
-}
 
-.message.error {
-    background: rgba(231, 76, 60, 0.3);
-    border: 1px solid #e74c3c;
-    color: #e74c3c;
-}
-
-.message.info {
-    background: rgba(52, 152, 219, 0.3);
-    border: 1px solid #3498db;
-    color: #3498db;
-}
 
 /* Buttons */
 .btn-group {
@@ -214,7 +170,7 @@ h6 {
 
 .btn-secondary {
     background: rgba(255, 255, 255, 0.1);
-    color: #e0e0e0;
+    color: #616161;
     border: 1px solid #666;
 }
 
@@ -300,86 +256,6 @@ h6 {
 .form-group select:focus {
     outline: none;
     border-color: #3498db;
-}
-
-/* Tabs */
-.tab-navigation {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.tab-navigation button {
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid #555;
-    color: white;
-    border-radius: 5px 5px 0 0;
-    cursor: pointer;
-}
-
-.tab-navigation button.active {
-    background: #3498db;
-    border-color: #3498db;
-}
-
-.tab-content {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 0 8px 8px 8px;
-    padding: 20px;
-    min-height: 300px;
-}
-
-.tab-btn {
-    padding: 0.75rem 1rem;
-    background: rgba(74, 158, 255, 0.1);
-    border: 1px solid #4a9eff;
-    color: #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: bold;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
-}
-
-.tab-btn:hover:not(.close-btn) {
-    background: rgba(74, 158, 255, 0.2);
-    color: #4a9eff;
-}
-
-.tab-btn.active {
-    background: rgba(74, 158, 255, 0.3);
-    color: #ffd700;
-    border-color: #ffd700;
-}
-
-.tab-btn .badge {
-    background: #4a9eff;
-    color: black;
-    border-radius: 12px;
-    padding: 0.2rem 0.6rem;
-    font-size: 0.8rem;
-    font-weight: bold;
-    margin-left: 0.5rem;
-}
-
-/* Dialog */
-.dialog-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: auto;
 }
 
 /* Scrollbars */

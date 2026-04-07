@@ -8,7 +8,7 @@ export const DB = localforage.createInstance({
 export class ContentManager {
   constructor(app) {
     this.app = app;
-    
+
     this.data = [];
 
     //data keys
@@ -23,14 +23,17 @@ export class ContentManager {
     return this.data;
   }
 
-  //add a new piece of content 
-  add() {
-    const id = 'content-'+Date.now();
+  //add a new piece of content
+  add(opts = {}) {
+    const id = "content-" + Date.now();
     const content = {
       id: id,
-      folder: null,
-      name: "New Content",
-      text: "",
+      folder: opts.folder || null,
+      name: opts.model ? "Chat Log" : "New Content",
+      text:
+        opts.text || opts.history
+          ? opts.history.map((h) => `Role: ${h.role}/n${h.content}/n/n---/n/n`)
+          : "",
     };
     this.data.push(content);
     DB.setItem(id, content);
@@ -39,28 +42,13 @@ export class ContentManager {
   }
 
   //update character from UI
-  update(id, key, val, notify = false) {
+  update(id, key, val) {
     const data = this.data.find((d) => d.id === id);
     //check for data
     if (data) {
-      if (key === "text" && notify) {
-        //always append notify text
-        data.text += "\n\n---\n\n" + val;
-      } else {
-        data[key] = val;
-      }
-
-      //notify
-      if (notify) {
-        this.app.notify({
-          title: "Update",
-          message: `${data.name} updated from AI response`,
-          color: "green",
-        });
-      }
+      data[key] = val;
 
       this.save();
-    } else {
     }
   }
 
@@ -124,9 +112,7 @@ export class ContentManager {
         >
         </textarea>
       </div>
-      <div
-        class="${showMD ? "relative h-90 overflow-y-scroll mb2" : "dn"}"
-      >
+      <div class="${showMD ? "relative h-90 overflow-y-scroll mb2" : "dn"}">
         <span
           class="pointer btn-secondary absolute top-0 right-0"
           onClick=${() => this.app.setSelected("showMD", false)}

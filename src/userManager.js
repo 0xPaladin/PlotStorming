@@ -39,6 +39,17 @@ long
     };
     error?: ErrorResponse;
   };
+
+  type StreamingChoice = {
+    finish_reason: string | null;
+    native_finish_reason: string | null;
+    delta: {
+      content: string | null;
+      role?: string;
+      tool_calls?: ToolCall[];
+    };
+    error?: ErrorResponse;
+  };
 */
 
 /*
@@ -53,32 +64,92 @@ export class UserManager {
       key: null,
       model: "google/gemma-3-27b-it",
       folders: ["Setting", "Prompts", "Characters", "Writing"], //list of folder names for organization
-      chatId: 0,
-      chats: [["New Chat", ""]],
+      chat: ["google/gemma-3-27b-it", "", []],
       ...JSON.parse(localStorage.getItem("userData")),
     };
 
     getModels();
   }
 
+  //get active chat
   get activeChat() {
-    return this.state.chats[this.state.chatId];
+    const chat = this.state.chat;
+    const [model, prompt, history] = chat;
+
+    return {
+      raw: chat,
+      model,
+      prompt,
+      history,
+      last: history.length - 1,
+    };
   }
+
+  //update chat
+  updateChat(idx, what) {
+    const chat = this.state.chat;
+    //now update
+    chat[idx] = what;
+    this.update("chat", chat);
+  }
+
+  /*
+    Folder Functions
+  */
 
   get folders() {
     return this.state.folders || [];
+  }
+
+  renameFolder(oldName, newName) {
+    //update folder name in all content
+    const CM = this.app.ContentManager;
+    CM.all.forEach((c) => {
+      if (c.folder === oldName) {
+        c.folder = newName;
+      }
+    });
+    CM.save();
+
+    //update folder name in user data
+    this.state.folders = this.state.folders.map((f) =>
+      f === oldName ? newName : f,
+    );
+    this.app.updateState("userData", this.state);
+    this.app.setSelected("rename-folder", null);
+    this.app.refresh();
+    console.log(newName);
+  }
+
+  deleteFolder(folderName) {
+    //remove folder from all content
+    const CM = this.app.ContentManager;
+    CM.all.forEach((c) => {
+      if (c.folder === folderName) {
+        c.folder = null;
+      }
+    });
+    CM.save();
+
+    //remove folder from user data
+    this.state.folders = this.state.folders.filter((f) => f !== folderName);
+
+    //save
+    this.app.updateState("userData", this.state);
+    localStorage.setItem(`userData`, JSON.stringify(this.state));
   }
 
   /*
     Build and send payload for AI based upon schema
     payload for open router 
   */
-  async sendPrompt(manager, message, schema, target) {
-    const { key, model } = this.state;
+  async sendPrompt(message, schema, target) {
+    const { key, chat } = this.state;
+    const model = chat[0];
 
     //call Open Router
     if (key && model) {
-      getResponse(key, model, message, schema, manager, target);
+      getResponse(key, model, message, schema, target);
     }
   }
 
@@ -113,12 +184,12 @@ export class UserManager {
     txtContent += `Exported: ${data.timestamp}\n`;
     txtContent += `${"=".repeat(50)}\n\n`;
 
-    // Each content gets its own section 
-    data.forEach(d => {
+    // Each content gets its own section
+    data.forEach((d) => {
       txtContent += `Name: ${d.name || "Unknown"}\n`;
       txtContent += d.text;
       txtContent += `${"-".repeat(5)}\n\n`;
-    })
+    });
 
     const blob = new Blob([txtContent], { type: "text/plain" });
     this.downloadFile(blob, `plotstorming-data-${Date.now()}.txt`);
@@ -202,59 +273,49 @@ export class UserManager {
     const html = this.app.html || window.app.html;
 
     return html`
-      <div class="section">
+      <div class="container bg-black-10 pa2">
         <h3>Settings</h3>
-        <div class="modal-section">
-              <div class="b i white">OpenRouter Key</div>
-              <input
-                class="w-90"
-                type="text"
-                value=${state.key}
-                onChange=${(e) => this.update("key", e.target.value)}
-              />
+        <div class="section">
+          <div class="b i">OpenRouter Key</div>
+          <input
+            class="w-90"
+            type="text"
+            value=${state.key}
+            onChange=${(e) => this.update("key", e.target.value)}
+          />
         </div>
-        <div class="modal-section pa2">
-            <div class="modal-section">
-              <h3>Save & Load Data</h3>
-              <button
-                class="w-100"
-                style="padding: 0.5em; background: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer;"
-                onClick=${() => this.exportJSON()}
-              >
-                Export as JSON
-              </button>
-              <button
-                class="w-100"
-                style="padding: 0.5em; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;"
-                onClick=${() => this.exportTXT()}
-              >
-                Export as TXT
-              </button>
-            </div>
+        <div class="section">
+          <h3>Save & Load Data</h3>
+          <button
+            class="w-100 mb2 btn-primary"
+            onClick=${() => this.exportJSON()}
+          >
+            Export as JSON
+          </button>
+          <button class="w-100 btn-green" onClick=${() => this.exportTXT()}>
+            Export as TXT
+          </button>
+        </div>
 
-            <div class="modal-section pa2">
-              <button
-                style="width: 100%; padding: 0.5em; background: #FF9800; color: white; border: none; border-radius: 4px; cursor: pointer;"
-                onClick=${() => this.loadJSON()}
-              >
-                Import JSON Data
-              </button>
-            </div>
+        <div class="section">
+          <button class="w-100 btn-green" onClick=${() => this.loadJSON()}>
+            Import JSON Data
+          </button>
         </div>
       </div>
     `;
   }
 }
 
-async function getResponse(key, model, messages, schema, manager, target) {
+async function getResponse(key, model, messages, schema, target) {
+  const app = window.app;
   const url = "https://openrouter.ai/api/v1/chat/completions";
   try {
     //build body
     const body = {
       model: model,
-      messages: messages.map((m) => {
-        return { role: "user", content: JSON.stringify(m) };
-      }),
+      messages,
+      stream: true,
     };
     //add schema if provided
     if (schema) {
@@ -262,7 +323,7 @@ async function getResponse(key, model, messages, schema, manager, target) {
     }
 
     //notify sent
-    App.UI.notify({
+    app.notify({
       title: "Prompt Sent",
       message: "Waiting for response...",
       color: "blue",
@@ -279,7 +340,7 @@ async function getResponse(key, model, messages, schema, manager, target) {
 
     if (!response.ok) {
       //notify
-      App.UI.notify({
+      app.notify({
         title: "Error",
         message: `Response status: ${response.status}`,
         color: "red",
@@ -289,12 +350,20 @@ async function getResponse(key, model, messages, schema, manager, target) {
     }
 
     const result = await response.json();
-    const content = result.choices[0].message.content;
+    const delta = result.choices[0].delta.content;
 
-    //update manager
-    if (manager) {
-      manager.update(target, "text", content, true);
-      App.UI.refresh();
+    //update target
+    if (target) {
+      //update text
+      const text = target.text + delta;
+      app.ContentManager.update(target.id, "text", text);
+    } else {
+      //no target, update chat
+      const { history, last } = app.UserManager.activeChat;
+      //update last with delts
+      history[last].content += delta;
+      //update
+      app.UserManager.updateChat(2, history);
     }
   } catch (error) {
     console.error(error.message);
