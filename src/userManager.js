@@ -65,6 +65,10 @@ export class UserManager {
     return this.state.chats[this.state.chatId];
   }
 
+  get folders() {
+    return this.state.folders || [];
+  }
+
   /*
     Build and send payload for AI based upon schema
     payload for open router 
@@ -195,7 +199,7 @@ export class UserManager {
 
   render() {
     const { state } = this;
-    const html = App.html;
+    const html = this.app.html || window.app.html;
 
     return html`
       <div class="section">
@@ -236,6 +240,7 @@ export class UserManager {
                 Import JSON Data
               </button>
             </div>
+        </div>
       </div>
     `;
   }

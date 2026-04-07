@@ -92,7 +92,7 @@ export class ContentManager {
   render(content) {
     const { html } = this.app;
     const { id, name, text } = content;
-    const showMD = UI.state.selected.get("showMD");
+    const showMD = this.app.state.selected.get("showMD");
 
     return html`<div class="modal-section bg-white-50 h-100">
       <div class="flex align-center">
@@ -105,7 +105,7 @@ export class ContentManager {
         <button
           class="btn-delete pa1"
           onClick=${() =>
-            this.delete(id, UI.setSelected("activeContent", null))}
+            this.delete(id, this.app.setSelected("activeContent", null))}
         >
           🗑
         </button>
@@ -113,7 +113,7 @@ export class ContentManager {
       <div class="${showMD ? "dn" : "relative"}">
         <span
           class="pointer dim bg-light-gray ba br2 b--black pa2 f4 absolute top-0 right-0"
-          onClick=${() => UI.setSelected("showMD", true)}
+          onClick=${() => this.app.setSelected("showMD", true)}
           >📃</span
         >
         <textarea
@@ -129,7 +129,7 @@ export class ContentManager {
       >
         <span
           class="pointer btn-secondary absolute top-0 right-0"
-          onClick=${() => UI.setSelected("showMD", false)}
+          onClick=${() => this.app.setSelected("showMD", false)}
           >📝</span
         >
         <div id="md-${id}" class="markdown ph2"></div>

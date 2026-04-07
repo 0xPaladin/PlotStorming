@@ -38,8 +38,10 @@ class App extends Component {
       localStorage.setItem("lastAccess", Date.now());
   
       this.ContentManager = new ContentManager(this);
+    App.ContentManager = this.ContentManager;
   
       this.UserManager = new UserManager(this);
+      App.UserManager = this.UserManager;
   
     //save to main APP
     window.app = this;
@@ -294,7 +296,7 @@ class App extends Component {
 }
 
 // Render the app
-render(html`< ${App} />`, document.body);
+render(html`<${App} />`, document.body);
 
 const enableResize = () => {
   const resizer = document.querySelector("#resizer");
