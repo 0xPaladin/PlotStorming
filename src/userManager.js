@@ -88,6 +88,10 @@ export class UserManager {
   //update chat
   updateChat(idx, what) {
     const chat = this.state.chat;
+    //look for adding to chat 
+    if(idx === 2){
+      app.updateState("chat",what)
+    }
     //now update
     chat[idx] = what;
     this.update("chat", chat);
@@ -307,6 +311,21 @@ export class UserManager {
   }
 }
 
+function UpdateChatFromAi (response, target) {
+  if (target) {
+      //update text
+      const text = target.text + response;
+      app.ContentManager.update(target.id, "text", text);
+    } else {
+      //no target, update chat
+      const { history, last } = app.UserManager.activeChat;
+      //update last with delts
+      history[last][1] += response;
+      //update
+      app.UserManager.updateChat(2, history);
+    }
+}
+
 async function getResponse(key, model, messages, schema, target) {
   const app = window.app;
   const url = "https://openrouter.ai/api/v1/chat/completions";
@@ -349,22 +368,52 @@ async function getResponse(key, model, messages, schema, target) {
       throw new Error(`Response status: ${response.status}`);
     }
 
-    const result = await response.json();
-    const delta = result.choices[0].delta.content;
-
-    //update target
-    if (target) {
-      //update text
-      const text = target.text + delta;
-      app.ContentManager.update(target.id, "text", text);
-    } else {
-      //no target, update chat
-      const { history, last } = app.UserManager.activeChat;
-      //update last with delts
-      history[last].content += delta;
-      //update
-      app.UserManager.updateChat(2, history);
+    //stream response
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('Response body is not readable');
     }
+
+    //decode buffer 
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    try {
+      while (true) {
+        //read buffer 
+        const { done, value } = await reader.read();
+        if (done) break;
+        // Append new chunk to buffer
+        buffer += decoder.decode(value, { stream: true });
+        
+        // Process complete lines from buffer
+        while (true) {
+          //parse and decode 
+          const lineEnd = buffer.indexOf('\n');
+          if (lineEnd === -1) break;
+          const line = buffer.slice(0, lineEnd).trim();
+          buffer = buffer.slice(lineEnd + 1);
+
+          //find data 
+          if (line.startsWith('data: ')) {
+            const data = line.slice(6);
+            if (data === '[DONE]') break;
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices[0].delta.content;
+              if (content) {
+                UpdateChatFromAi(content,target);
+              }
+            } catch (e) {
+              // Ignore invalid JSON
+            }
+          }
+        }
+      }
+    } finally {
+      reader.cancel();
+    }
+
   } catch (error) {
     console.error(error.message);
   }
@@ -394,3 +443,9 @@ async function getModels() {
     console.error(error.message);
   }
 }
+
+
+/*
+  //update target
+    
+*/

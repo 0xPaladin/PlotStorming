@@ -27,6 +27,7 @@ class App extends Component {
       tick: 0,
       models: [],
       show: null,
+      chat : [],
       selected: new Map([["leftColumn", null]]),
       payload: new Set(),
       draggedContent: null, // Track dragged content
@@ -96,21 +97,14 @@ class App extends Component {
     const { history, prompt } = UM.activeChat;
 
     //add to history - and update
-    history.push(
-      {
-        role: "user",
-        content: prompt,
-      },
-      {
-        role: "assistant",
-        content: "",
-      },
-    );
+    history.push(["user",prompt],["assistant",""]);
     UM.updateChat(2, history);
     UM.updateChat(1, "");
 
     //add chat history
-    payload.push(...history);
+    payload.push(...history.map(h => {
+      return { role : h[0], content: h[1]};
+    }));
 
     //send to Open Router
     UM.sendPrompt(payload, null, null);
@@ -212,7 +206,7 @@ class App extends Component {
   }
 
   //main page render
-  render({}, { show, selected, payload }) {
+  render({}, { show, selected, payload, chat }) {
     //get content manager
     const CM = this.ContentManager;
     const content = CM.all.find((c) => c.id === selected.get("activeContent"));
@@ -401,8 +395,8 @@ class App extends Component {
             </div>
           </div>
           <div class="w-100 ba b--black mv1" style="flex:1;overflow-y: auto;">
-            ${UM.activeChat.history.map(
-              (txt) => html`<div class="br ba2 mv1">${txt}</div>`,
+            ${chat.map(
+              (d) => html`<div class="br ba2 mv1">${d[1]}</div>`,
             )}
           </div>
           <div class="w-100">
