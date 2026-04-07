@@ -1,0 +1,139 @@
+// Configure localforage
+export const DB = localforage.createInstance({
+  name: "PlotStorming",
+  storeName: "content",
+  description: "user content",
+});
+
+export class ContentManager {
+  constructor(app) {
+    this.app = app;
+    
+    this.data = [];
+
+    //data keys
+    this.dataKeys = ["id", "folder", "name", "text"];
+
+    this.poll();
+    //poll every 5 seconds
+    setInterval(() => this.poll(), 5000);
+  }
+
+  get all() {
+    return this.data;
+  }
+
+  //add a new piece of content 
+  add() {
+    const id = 'content-'+Date.now();
+    const content = {
+      id: id,
+      folder: null,
+      name: "New Content",
+      text: "",
+    };
+    this.data.push(content);
+    DB.setItem(id, content);
+    //select new content
+    this.app.setSelected("activeContent", id);
+  }
+
+  //update character from UI
+  update(id, key, val, notify = false) {
+    const data = this.data.find((d) => d.id === id);
+    //check for data
+    if (data) {
+      if (key === "text" && notify) {
+        //always append notify text
+        data.text += "\n\n---\n\n" + val;
+      } else {
+        data[key] = val;
+      }
+
+      //notify
+      if (notify) {
+        this.app.notify({
+          title: "Update",
+          message: `${data.name} updated from AI response`,
+          color: "green",
+        });
+      }
+
+      this.save();
+    } else {
+    }
+  }
+
+  poll() {
+    return DB.iterate((data, key, iterationNumber) => {
+      //check if exists
+      if (this.data.find((d) => d.id === key)) {
+        return;
+      }
+      this.data.push(data);
+    });
+  }
+
+  //save
+  save() {
+    this.data.forEach((d) => DB.setItem(d.id, d));
+  }
+
+  //handle data delete
+  delete(id) {
+    this.data = this.data.filter((d) => d.id !== id);
+    DB.removeItem(id);
+    this.app.refresh();
+  }
+
+  /*
+  UI Components
+  */
+  render(content) {
+    const { html } = this.app;
+    const { id, name, text } = content;
+    const showMD = UI.state.selected.get("showMD");
+
+    return html`<div class="modal-section bg-white-50 h-100">
+      <div class="flex align-center">
+        <input
+          type="text"
+          class="f3 w-100"
+          value=${name}
+          onInput=${(e) => this.update(id, "name", e.target.value)}
+        />
+        <button
+          class="btn-delete pa1"
+          onClick=${() =>
+            this.delete(id, UI.setSelected("activeContent", null))}
+        >
+          🗑
+        </button>
+      </div>
+      <div class="${showMD ? "dn" : "relative"}">
+        <span
+          class="pointer dim bg-light-gray ba br2 b--black pa2 f4 absolute top-0 right-0"
+          onClick=${() => UI.setSelected("showMD", true)}
+          >📃</span
+        >
+        <textarea
+          class="w-100 vh-75"
+          rows="10"
+          value=${text}
+          onInput=${(e) => this.update(id, "text", e.target.value)}
+        >
+        </textarea>
+      </div>
+      <div
+        class="${showMD ? "relative h-90 overflow-y-scroll mb2" : "dn"}"
+      >
+        <span
+          class="pointer btn-secondary absolute top-0 right-0"
+          onClick=${() => UI.setSelected("showMD", false)}
+          >📝</span
+        >
+        <div id="md-${id}" class="markdown ph2"></div>
+      </div>
+    </div>`;
+  }
+}

@@ -1,0 +1,401 @@
+body {
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: no-repeat center center fixed url('../hubble_m_61.jpg'), black;
+}
+
+#center {
+    flex-basis: 0;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+#center textarea {
+    resize: none;
+}
+
+#center .markdown {
+    height: calc(100vh - 120px);
+}
+
+#right-bar {
+    z-index: 2;
+    height: 100vh;
+    overflow: hidden;
+    min-width: 0;
+    position: relative;
+    flex-basis: 300px;
+}
+
+#right-bar .container {
+    overflow: hidden;
+}
+
+#right-bar textarea {
+    resize: vertical;
+}
+
+#resizer {
+    flex-basis: 4px;
+    position: relative;
+    z-index: 4;
+    cursor: col-resize;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    border-right: 1px solid rgba(0, 0, 0, 0.4);
+    background: #acb1c9;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Headers */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--gc-primary);
+    font-family: 'Arial', sans-serif;
+    text-shadow: 0 0 5px rgba(212, 165, 116, 0.5);
+}
+
+/* Top Banner */
+.top-banner {
+    z-index: 9999;
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    border-radius: 9999px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Tooltip container */
+.tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+    /* If you want dots under the hoverable text */
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 250px;
+    background-color: black;
+    color: #fff;
+    text-align: center;
+    padding: 5px 0;
+    border-radius: 6px;
+    /* Position the tooltip text - see examples below! */
+    position: absolute;
+    z-index: 1;
+    top: -5px;
+    right: 105%;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+}
+
+/* Drowpdown container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    z-index: 1;
+    border-radius: 5px;
+    min-width: 160px;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:focus .dropdown-content {
+    display: block;
+}
+
+/* Messages */
+.message {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.message.success {
+    background: rgba(46, 204, 113, 0.3);
+    border: 1px solid #2ecc71;
+    color: #2ecc71;
+}
+
+.message.error {
+    background: rgba(231, 76, 60, 0.3);
+    border: 1px solid #e74c3c;
+    color: #e74c3c;
+}
+
+.message.info {
+    background: rgba(52, 152, 219, 0.3);
+    border: 1px solid #3498db;
+    color: #3498db;
+}
+
+/* Buttons */
+.btn-group {
+    display: inline-flex;
+}
+
+.btn-group button {
+    cursor: pointer;
+    /* Pointer/hand icon */
+    float: left;
+    /* Float the buttons side by side */
+}
+
+/* Clear floats (clearfix hack) */
+.btn-group:after {
+    content: "";
+    clear: both;
+    display: table;
+}
+
+.btn-group button:not(:last-child) {
+    border-right: none;
+    /* Prevent double borders */
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-selected,
+.btn-delete,
+.btn-red,
+.btn-green {
+    padding: 0.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #e0e0e0;
+    border: 1px solid #666;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: #888;
+}
+
+.btn-selected {
+    background: #3498db;
+}
+
+.btn-selected:hover {
+    background: #2980b9;
+}
+
+.btn-delete {
+    background: #e67e22;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #d35400;
+}
+
+.btn-red {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-red:hover {
+    background: #c0392b;
+    color: white;
+}
+
+.btn-green {
+    background: #2ecc71;
+    color: white;
+}
+
+.btn-green:hover {
+    background: #27ae60;
+    color: white
+}
+
+/* File Input */
+.file-input-label {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #95a5a6;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.file-input-label:hover {
+    background: #7f8c8d;
+}
+
+/* Forms */
+.form-group {
+    margin: 15px 0;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+/* Tabs */
+.tab-navigation {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.tab-navigation button {
+    padding: 8px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid #555;
+    color: white;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+}
+
+.tab-navigation button.active {
+    background: #3498db;
+    border-color: #3498db;
+}
+
+.tab-content {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0 8px 8px 8px;
+    padding: 20px;
+    min-height: 300px;
+}
+
+.tab-btn {
+    padding: 0.75rem 1rem;
+    background: rgba(74, 158, 255, 0.1);
+    border: 1px solid #4a9eff;
+    color: #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: bold;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+}
+
+.tab-btn:hover:not(.close-btn) {
+    background: rgba(74, 158, 255, 0.2);
+    color: #4a9eff;
+}
+
+.tab-btn.active {
+    background: rgba(74, 158, 255, 0.3);
+    color: #ffd700;
+    border-color: #ffd700;
+}
+
+.tab-btn .badge {
+    background: #4a9eff;
+    color: black;
+    border-radius: 12px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-left: 0.5rem;
+}
+
+/* Dialog */
+.dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gc-primary);
+    border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #e0b896;
+}
