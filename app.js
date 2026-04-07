@@ -75,6 +75,17 @@ class App extends Component {
       const el = document.getElementById("md-" + content.id);
       el.innerHTML = marked.parse(content.text);
     }
+
+    //query selector for ai-chat
+    const chat = this.state.chat;
+    document.querySelectorAll('.chat-ai').forEach(el => {
+      const text = chat[Number(el.dataset.id)][1];
+      if(text === ""){
+        return;
+      }
+      //convert to MD 
+      el.innerHTML = marked.parse(text);
+    });
   }
 
   /*
@@ -102,7 +113,7 @@ class App extends Component {
     UM.updateChat(1, "");
 
     //add chat history
-    payload.push(...history.map(h => {
+    payload.push(...history.filter(h => h[1]!=="").map(h => {
       return { role : h[0], content: h[1]};
     }));
 
@@ -394,9 +405,9 @@ class App extends Component {
               </select>
             </div>
           </div>
-          <div class="w-100 ba b--black mv1" style="flex:1;overflow-y: auto;">
+          <div class="chat mv1" style="flex:1;overflow-y: auto;">
             ${chat.map(
-              (d) => html`<div class="br ba2 mv1">${d[1]}</div>`,
+              (d,i) => html`<div class="${d[0] === "user" ? "chat-user" : "chat-ai"}" data-id=${i}>${d[1]}</div>`,
             )}
           </div>
           <div class="w-100">
@@ -408,7 +419,7 @@ class App extends Component {
               onInput=${(e) => UM.updateChat(1, e.target.value)}
             ></textarea>
             <div class="flex justify-between">
-              <button class="btn-delete" onClick=${() => UM.updateChat(2, [])}>
+              <button class="btn-delete" onClick=${() => UM.updateChat(2, [],UM.updateChat(1, ""))}>
                 Clear
               </button>
               <button class="btn-green" onClick=${() => CM.add(UM.activeChat)}>

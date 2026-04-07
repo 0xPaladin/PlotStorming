@@ -68,6 +68,11 @@ export class UserManager {
       ...JSON.parse(localStorage.getItem("userData")),
     };
 
+    //check for chat and update main ui 
+    if(this.activeChat.history.length > 0){
+      app.updateState("chat",this.activeChat.history);
+    }
+
     getModels();
   }
 
@@ -221,33 +226,30 @@ export class UserManager {
         const text = await file.text();
         const data = JSON.parse(text);
 
-        // Load characters
-        if (data.characters && Array.isArray(data.characters)) {
-          for (const char of data.characters) {
-            App.CharacterManager.data.push(char);
+        //content manager 
+        const CM = this.app.ContentManager;
+        //load data 
+        data.forEach(d => {
+          let content = CM.data.find(c => c.id === d.id);
+          if(content){
+            //update 
+            content = {...content, ...d};
           }
-        }
-
-        // Load locations
-        if (data.locations && Array.isArray(data.locations)) {
-          for (const loc of data.locations) {
-            App.LocationManager.data.push(loc);
+          else {
+            //add 
+            CM.data.push(d);
           }
-        }
+        })
 
-        // Save to local storage
-        if (App.CharacterManager?.save) App.CharacterManager.save();
-        if (App.LocationManager?.save) App.LocationManager.save();
-
-        App.UI.refresh();
-        App.UI.notify({
+        this.app.refresh();
+        this.app.notify({
           title: "Import Complete",
-          message: `Loaded ${data.characters?.length || 0} characters and ${data.locations?.length || 0} locations`,
+          message: `Loaded ${data.length} items.`,
           color: "green",
         });
       } catch (error) {
         console.error("Error loading JSON:", error);
-        App.UI.notify({
+        this.app.notify({
           title: "Import Error",
           message: `Failed to load file: ${error.message}`,
           color: "red",

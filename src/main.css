@@ -13,6 +13,13 @@ body {
     min-width: 0;
 }
 
+#center .container {
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
 #center textarea {
     resize: none;
 }
@@ -30,6 +37,27 @@ body {
     flex-basis: 300px;
     display: flex;
     flex-direction: column;
+}
+
+.chat {
+    width: 100%;
+    border: 1px solid black;
+}
+
+.chat div {
+    border: 1px solid black;
+    border-radius: 5px;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    padding: 0.5rem;
+}
+
+.chat .chat-user {
+    margin-left: 1rem;
+}
+
+.chat .chat-ai {
+    margin-right: 1rem;
 }
 
 #right-bar textarea {

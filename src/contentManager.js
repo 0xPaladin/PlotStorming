@@ -32,7 +32,7 @@ export class ContentManager {
       name: opts.model ? "Chat Log" : "New Content",
       text:
         opts.text || opts.history
-          ? opts.history.map((h) => `Role: ${h.role}/n${h.content}/n/n---/n/n`)
+          ? opts.history.map((h) => `Role: ${h[0]}\n${h[1]}\n\n---\n\n`).join("")
           : "",
     };
     this.data.push(content);
@@ -82,8 +82,8 @@ export class ContentManager {
     const { id, name, text } = content;
     const showMD = this.app.state.selected.get("showMD");
 
-    return html`<div class="modal-section bg-white-50 h-100">
-      <div class="flex align-center">
+    return html`<div class="container bg-white-50 h-100 pa2">
+      <div class="flex align-center mb2">
         <input
           type="text"
           class="f3 w-100"
@@ -98,21 +98,20 @@ export class ContentManager {
           🗑
         </button>
       </div>
-      <div class="${showMD ? "dn" : "relative"}">
+      <div class="${showMD ? "dn" : "relative"}" style="flex:1;overflow-y: auto;">
         <span
           class="pointer dim bg-light-gray ba br2 b--black pa2 f4 absolute top-0 right-0"
           onClick=${() => this.app.setSelected("showMD", true)}
           >📃</span
         >
         <textarea
-          class="w-100 vh-75"
-          rows="10"
+          class="w-100 h-100"
           value=${text}
           onInput=${(e) => this.update(id, "text", e.target.value)}
         >
         </textarea>
       </div>
-      <div class="${showMD ? "relative h-90 overflow-y-scroll mb2" : "dn"}">
+      <div class="${showMD ? "relative" : "dn"}" style="flex:1;overflow-y: auto;">
         <span
           class="pointer btn-secondary absolute top-0 right-0"
           onClick=${() => this.app.setSelected("showMD", false)}
@@ -120,6 +119,7 @@ export class ContentManager {
         >
         <div id="md-${id}" class="markdown ph2"></div>
       </div>
+      <div class="h1">  </div>
     </div>`;
   }
 }
