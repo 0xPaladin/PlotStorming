@@ -17,24 +17,28 @@ PlotStorming provides an intuitive interface to chat with AI models, store your 
 
 ## Features
 
-📝 **Content Management**
+**Content Management**
+
 - Create and edit notes, outlines, and writing
 - Organize content into folders (Settings, Prompts, Characters, Writing, etc.)
 - Full CRUD operations for your content
 - Markdown rendering support for formatted text
 
-✨ **AI-Powered Creativity**
+**AI-Powered Creativity**
+
 - Integrated chat with multiple AI models via OpenRouter
 - Real-time AI responses to spark ideas
 - Include content items in your prompts for contextual responses
 - Support for diverse model options (creative, long-form, cost-effective)
 
-💾 **Local Data Persistence**
+**Local Data Persistence**
+
 - All your content stored locally in your browser (IndexedDB)
 - No data sent to servers except AI API calls
 - Privacy-first design — your writing stays on your device
 
-⚙️ **User Customization**
+**User Customization**
+
 - Configure your preferred AI model
 - Manage API keys securely
 - Create custom folder structures for organization
@@ -42,7 +46,7 @@ PlotStorming provides an intuitive interface to chat with AI models, store your 
 
 ## Getting Started
 
-Either install locally or use the hosted version at ... 
+Either install locally or use the hosted version at the [PlotStorming GitHub Site](https://0xpaladin.github.io/PlotStorming/)
 
 ### Prerequisites
 
@@ -51,27 +55,31 @@ Either install locally or use the hosted version at ...
 ### Installation
 
 1. Clone or download the repository:
+
 ```bash
 git clone <repo-url>
 cd PlotStorming
 ```
 
-2. Install dependencies:
+1. Install dependencies:
+
 ```bash
 npm install
 ```
 
-3. Start the server:
+1. Start the server:
+
 ```bash
 node server.js
 ```
 
-4. Open your browser and visit:
+1. Open your browser and visit:
+
 ```
 http://localhost:5000
 ```
 
-5. On first use, enter your OpenRouter API key in the settings to enable AI features.
+1. On first use, enter your OpenRouter API key in the settings to enable AI features.
 
 ## Usage
 
@@ -86,6 +94,7 @@ http://localhost:5000
 ### Folders
 
 PlotStorming comes with pre-configured folders to help organize your work:
+
 - **Settings** — User preferences and configuration
 - **Prompts** — Reusable  AI prompts and writing prompts
 - **Characters** — Character profiles and backgrounds
@@ -98,12 +107,14 @@ Create additional folders as needed for your projects.
 PlotStorming supports any model available through OpenRouter, including:
 
 **Creative Writing:**
+
 - Qwen/Qwen3-235B
 - Google/Gemma-3-27B
 - Google/Gemini-2.5-Flash-Lite
 - Mistral/Mistral-Small-3.2-24B
 
 **Long-form Content:**
+
 - GLM-4.7-Flash
 - ByteDance Seed-1.6-Flash
 - Xiaomi MIMO-v2-Flash
@@ -175,16 +186,19 @@ TODO
 ## Troubleshooting
 
 ### "API key not working"
+
 - Verify your OpenRouter API key is valid at [openrouter.io](https://openrouter.io)
 - Check that your account has credits/valid payment method
 - Try a different model
 
 ### "My data disappeared"
+
 - Check your browser's local storage settings (may have been cleared)
 - Check if you're in a private/incognito window (data is cleared when closing)
 - Data is stored per browser/device — switching browsers won't show your data
 
 ### Server won't start
+
 - Ensure Node.js is installed: `node --version`
 - Check that port 5000 is available
 - Try running with explicit host: `node server.js`
@@ -192,6 +206,7 @@ TODO
 ## Contributing
 
 This project is open for improvements! Feel free to:
+
 - Report bugs or suggest features
 - Improve the UI/UX
 - Add new storage backends
@@ -204,9 +219,10 @@ MIT
 ## Support
 
 For issues or questions:
+
 - Check the troubleshooting section above
 - Create an issue in the repository
 
 ---
 
-**Happy writing! Let your imagination run wild with PlotStorming.** 
+**Happy writing! Let your imagination run wild with PlotStorming.**
