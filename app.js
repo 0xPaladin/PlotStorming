@@ -27,7 +27,7 @@ class App extends Component {
       tick: 0,
       models: [],
       show: null,
-      chat : [],
+      chat: [],
       selected: new Map([["leftColumn", null]]),
       payload: new Set(),
       draggedContent: null, // Track dragged content
@@ -80,7 +80,7 @@ class App extends Component {
     const chat = this.state.chat;
     document.querySelectorAll('.chat-ai').forEach(el => {
       const text = chat[Number(el.dataset.id)][1];
-      if(text === ""){
+      if (text === "") {
         return;
       }
       //convert to MD 
@@ -108,13 +108,13 @@ class App extends Component {
     const { history, prompt } = UM.activeChat;
 
     //add to history - and update
-    history.push(["user",prompt],["assistant",""]);
+    history.push(["user", prompt], ["assistant", ""]);
     UM.updateChat(2, history);
     UM.updateChat(1, "");
 
     //add chat history
-    payload.push(...history.filter(h => h[1]!=="").map(h => {
-      return { role : h[0], content: h[1]};
+    payload.push(...history.filter(h => h[1] !== "").map(h => {
+      return { role: h[0], content: h[1] };
     }));
 
     //send to Open Router
@@ -217,7 +217,7 @@ class App extends Component {
   }
 
   //main page render
-  render({}, { show, selected, payload, chat }) {
+  render({ }, { show, selected, payload, chat }) {
     //get content manager
     const CM = this.ContentManager;
     const content = CM.all.find((c) => c.id === selected.get("activeContent"));
@@ -253,9 +253,9 @@ class App extends Component {
           type="checkbox"
           value=${payload.has(c.id)}
           onClick=${() =>
-            payload.has(c.id)
-              ? this.state.payload.delete(c.id)
-              : this.state.payload.add(c.id)}
+          payload.has(c.id)
+            ? this.state.payload.delete(c.id)
+            : this.state.payload.add(c.id)}
         />
         <div
           class="pointer dim"
@@ -297,15 +297,15 @@ class App extends Component {
               <button
                 class="bg-black-10 dim pointer"
                 onClick=${() =>
-                  UM.update("folders", [...UM.folders, "New Folder"])}
+        UM.update("folders", [...UM.folders, "New Folder"])}
               >
                 <img src="./assets/add-folder.svg" width="20" height="20" />
               </button>
             </div>
             <!-- Folders -->
             ${Object.keys(folders).map(
-              (f) =>
-                html`<div
+          (f) =>
+            html`<div
                     class="b black w-100 mv1 flex items-center justify-between"
                     style="gap: 8px;"
                     onDragOver=${(e) => this.onFolderDragOver(e)}
@@ -315,18 +315,18 @@ class App extends Component {
                       <span
                         class="f4"
                         onClick=${() =>
-                          this.setSelected(`folder-${f}`, !folders[f].show)}
+                this.setSelected(`folder-${f}`, !folders[f].show)}
                         >${folders[f].show ? "📂" : "📁"}</span
                       >
                       ${toRename === f
-                        ? html`<input
+                ? html`<input
                             type="text"
                             value=${f}
                             onBlur=${(e) => UM.renameFolder(f, e.target.value)}
                           />`
-                        : html`<span
+                : html`<span
                             onClick=${() =>
-                              this.setSelected(`folder-${f}`, !folders[f].show)}
+                    this.setSelected(`folder-${f}`, !folders[f].show)}
                             >${f}</span
                           >`}
                     </div>
@@ -360,7 +360,7 @@ class App extends Component {
                   >
                     ${(folders[f].content || []).map((c) => contentItem(c))}
                   </div>`,
-            )}
+        )}
             <!-- No Folder -->
             <div
               class="b black w-100 mv1 flex items-center"
@@ -400,15 +400,18 @@ class App extends Component {
                 onChange=${(e) => UM.updateChat(0, e.target.value)}
               >
                 ${this.state.models.map(
-                  (m) => html`<option value=${m.id}>${m.name}</option>`,
-                )}
+          (m) => html`<option value=${m.id}>${m.name}</option>`,
+        )}
               </select>
             </div>
           </div>
           <div class="chat mv1" style="flex:1;overflow-y: auto;">
             ${chat.map(
-              (d,i) => html`<div class="${d[0] === "user" ? "chat-user" : "chat-ai"}" data-id=${i}>${d[1]}</div>`,
-            )}
+          (d, i) => html`<div 
+            class="${d[0] === "user" ? "chat-user" : "chat-ai pointer"}" 
+            data-id=${i} 
+            onClick=${()=> d[0] !== "user" ? copyToClipboard(d[1]) : null}>${d[1]}</div>`,
+        )}
           </div>
           <div class="w-100">
             <div class="b i">Prompt</div>
@@ -419,7 +422,7 @@ class App extends Component {
               onInput=${(e) => UM.updateChat(1, e.target.value)}
             ></textarea>
             <div class="flex justify-between">
-              <button class="btn-delete" onClick=${() => UM.updateChat(2, [],UM.updateChat(1, ""))}>
+              <button class="btn-delete" onClick=${() => UM.updateChat(2, [], UM.updateChat(1, ""))}>
                 Clear
               </button>
               <button class="btn-green" onClick=${() => CM.add(UM.activeChat)}>
@@ -436,6 +439,26 @@ class App extends Component {
   }
 }
 
+/*
+  Copy to Clipboard function
+*/
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      window.app.UI.notify({
+        message: "Copied to clipboard",
+        color: "green",
+      });
+    })
+    .catch(err => {
+      console.error("Failed to copy: ", err);
+    });
+}
+
+
+/*
+  Handler for resizing right bar
+*/
 const enableResize = () => {
   const resizer = document.querySelector("#resizer");
   const sidebar = document.querySelector("#right-bar");
