@@ -24,10 +24,6 @@ body {
     resize: none;
 }
 
-#center .markdown {
-    height: calc(100vh - 120px);
-}
-
 #right-bar {
     z-index: 2;
     height: 100vh;
