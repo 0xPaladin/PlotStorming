@@ -26,10 +26,15 @@ handlebars.registerHelper("ws", function (str) {
 });
 
 //roll from table given table object
-handlebars.registerHelper("rollTable", function (table) {
+handlebars.registerHelper("rollTable", function (table, altDie = null) {
+  //if no dice push to Pick  
+  if (!table.dice) {
+    return Pick(table.entries || table);
+  }
+
   const { dice, entries } = table;
   //roll dice
-  const roll = diceRoll(dice);
+  const roll = diceRoll(altDie || dice);
   //find entry
   const entry = entries.find((e) => {
     const [range] = e.split("||");
@@ -46,6 +51,25 @@ handlebars.registerHelper("rollTable", function (table) {
   return value;
 });
 
+//pick unique N from array
+handlebars.registerHelper("unique", function (toPick, n) {
+  const arr = typeof toPick === "string"
+    ? toPick.split(",").map((str) => str.trim())
+    : toPick
+
+  //have to remove duplicates in the array first 
+  return RNG.shuffle([...new Set(arr)]).slice(0, n);
+});
+
+//pick n from array
+handlebars.registerHelper("pickN", function (toPick, n) {
+  return Array.from({ length: n }, () => Pick(
+    typeof toPick === "string"
+      ? toPick.split(",").map((str) => str.trim())
+      : toPick,
+  ));
+});
+
 //pick from array
 handlebars.registerHelper("pick", function (toPick) {
   return Pick(
@@ -53,6 +77,12 @@ handlebars.registerHelper("pick", function (toPick) {
       ? toPick.split(",").map((str) => str.trim())
       : toPick,
   );
+});
+
+//slice array
+handlebars.registerHelper("slice", function (arr, start, end) {
+  return (typeof arr === "string" ? arr.split(",").map(str => str.trim()) : arr)
+    .slice(Number(start), Number(end));
 });
 
 //roll dice
@@ -64,6 +94,11 @@ handlebars.registerHelper("roll", function (dice) {
 handlebars.registerHelper("eval", function (str, data) {
   const template = handlebars.compile(str);
   return template(data);
+});
+
+//equality check
+handlebars.registerHelper("eq", function (a, b) {
+  return a === b;
 });
 
 //roll dice
@@ -179,7 +214,7 @@ export class GeneratorManager {
         <span
           class="pointer dim bg-light-gray ba br2 b--black pa2 f4 absolute top-0 right-0"
           onClick=${() =>
-            this.app.setSelected("generatorResult", this.evaluate(content))}
+        this.app.setSelected("generatorResult", this.evaluate(content))}
           >▶︎</span
         >
         <textarea
