@@ -126,52 +126,13 @@ humanoidTypes:
   common: mixed group,human (medium)||2,6
 `
 
-const RegionFeatures = `
-description: Tables to randomly generate features for a fantasy setting.
-source: Freebooters on the Frontier 2nd Edition by Jason Lutes
-
-import:
-  - FotF_Creatures
-
-output: {{lookup @root (rollTable featureType)}}
-
-featureType:
-  roll: 1d12
-  entries:
-    - 1..4||creature
-    - 3..4||hazard
-    - 5..6||obstacle
-    - 7..8||area
-    - 9..10||namedPlace
-    - 11||site
-    - 12||factionPresence
-    - 12..99||settlement
-
-creature: {{FotF_Creatures.output}}
-
-hazard: 
-
-hazardType: u|n||1,11
-hazardTypes: 
-  u:
-  n: 
-
-obstacle:
-
-area:
-
-namedPlace:
-
-site:
-
-factionPresence
-
-settlement
-`
-
 export default {
   Region: {
     name: "FotF_Region",
     code: Region,
+  },
+  Creatures: {
+    name: "FotF_Creatures",
+    code: Creatures,
   },
 };
