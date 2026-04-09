@@ -28,8 +28,7 @@ handlebars.registerHelper("ws", function (str) {
 const RollTable = (table, altDie = null) => {
   //if no dice push to Pick
   if (!table.dice) {
-    console.log(table);
-    return Pick(table.entries || table);
+    return Pick(table);
   }
 
   const { dice, entries } = table;
@@ -94,7 +93,6 @@ handlebars.registerHelper("pick", function (toPick) {
 
 //slice array
 handlebars.registerHelper("tSlice", function (arr, start, end) {
-  console.log(arr, start, end);
   return (
     typeof arr === "string" ? arr.split(",").map((str) => str.trim()) : arr
   ).slice(Number(start), Number(end));

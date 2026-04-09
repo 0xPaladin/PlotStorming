@@ -366,7 +366,7 @@ factionTypeTable:
   - Nationalist/Loyalist
   - Immigrant/Outside/Foreigner  
   - Academic/Arcane
-  - {{unique (slice factionTypeTable 0 11) 2}}
+  - {{unique (tSlice factionTypeTable 0 11) 2}}
 
 factionGoalTable:
   dice: 1d12
@@ -435,8 +435,8 @@ ABERRANCE:
   - gibbering/babbling
   - exudes chaos/blight
   - shapechanging
-  - {{rollTable ODDITY}} based
-  - {{unique (slice ABERRANCE 0 11) 2}}
+  - "{{rollTable ODDITY}} based"
+  - "{{unique (tSlice ABERRANCE 0 11) 2}}"
 
 ABILITY:
   - bless/curse
@@ -446,11 +446,11 @@ ABILITY:
   - mimic/camouflage
   - seduce/hypnotize
   - dissolve/disintegrate
-  - {{rollTable ASPECT}} based 
-  - {{rollTable ELEMENT}}
+  - "{{rollTable ASPECT}} based"
+  - "{{rollTable ELEMENT}}"
   - drain life/drain magic
-  - {{rollTable MAGIC}}
-  - {{unique (slice ABILITY 0 11) 2}}
+  - "{{rollTable MAGIC}}"
+  - "{{unique (tSlice ABILITY 0 11) 2}}"
 
 ACTIVITY:
   dice: 1d12
@@ -507,8 +507,8 @@ ALIGNMENT:
   - lawful
   - good
   - good
-  - {{pick 'lawful,neutral,chaotic'}} {{pick 'evil,neutral,good'}}
-  - {{pick 'lawful,neutral,chaotic'}} {{pick 'evil,neutral,good'}}
+  - "{{pick 'lawful,neutral,chaotic'}} {{pick 'evil,neutral,good'}}"
+  - "{{pick 'lawful,neutral,chaotic'}} {{pick 'evil,neutral,good'}}"
 
 ASPECT:
   dice: 1d12
@@ -564,8 +564,8 @@ DAMAGE_TYPE:
   - poison/toxic
   - acid/dissolving
   - choking/asphyxiating
-  - {{rollTable ELEMENTAL}}
-  - {{unique (slice DAMAGE_TYPE 0 11) 2}}    
+  - "{{rollTable ELEMENT}}"
+  - "{{unique (tSlice DAMAGE_TYPE 0 11) 2}}"
 
 DESIGN:
   - blank/plain
@@ -579,7 +579,7 @@ DESIGN:
   - astrological/cosmic
   - balanced/harmonious
   - erratic/chaotic/random
-  - {{unique (slice DESIGN 0 11) 2}}
+  - "{{unique (tSlice DESIGN 0 11) 2}}"
 
 ELEMENT:
   dice: 1d12
@@ -605,7 +605,7 @@ FACTION:
   - nationalist/loyalist
   - outsider/foreign
   - academic/arcane
-  - {{unique (slice FACTION 0 11) 2}}
+  - "{{unique (tSlice FACTION 0 11) 2}}"
 
 MAGIC:
   dice: 1d12
@@ -617,7 +617,7 @@ MAGIC:
     - 6||enchantment/artifice
     - 7||transformation
     - 8||warding/binding
-    - 9..10||{{rollTable ELEMENTAL}}
+    - 9..10||"{{rollTable ELEMENT}}"
     - 11||restoration/healing
     - 12||divination/scrying
 
@@ -632,7 +632,7 @@ ODDITY:
   - magnetic/repellant
   - multilevel/tiered
   - absurd/impossible
-  - {{unique (slice ODDITY 0 10) 2}}
+  - "{{unique (tSlice ODDITY 0 10) 2}}"
 
 ORIENTATION:
   dice: 1d12
@@ -659,7 +659,7 @@ TERRAIN:
     - 7..8||woodland/jungle
     - 9..10||highland/hills
     - 11||mountains
-    - 12||{{altRollTable TERRAIN "1d10+1"}} odd: {{rollTable ODDITY}}
+    - 12||"{{altRollTable TERRAIN '1d10+1'}}" odd: "{{rollTable ODDITY}}"
 
 VISIBILITY:
   dice: 1d12
