@@ -162,18 +162,18 @@ import:
   - FotF_Creatures
   - FotF_Details
 
-output: {{rollTable FEATURE}}
+output: "{{rollTable FEATURE}}"
 
 FEATURE:
   dice: 1d12
   entries:
-    - 1..4||Creature: {{FotF_Creatures.output}}
-    - 5||Hazard: {{rollTable HAZARD}}
-    - 6||Obstacle: {{rollTable OBSTACLE}}
-    - 7||Area: {{rollTable AREA}}
-    - 8||Named Place: {{rollTable NAMEDPLACE}}
-    - 9..11||Site: {{rollTable SITE}}
-    - 12||Faction Presence: {{rollTable FACTION}}
+    - "1..4||Creature: {{FotF_Creatures.output}}"
+    - "5||Hazard: {{rollTable HAZARD}}"
+    - "6||Obstacle: {{rollTable OBSTACLE}}"
+    - "7||Area: {{rollTable AREA}}"
+    - "8||Named Place: {{rollTable NAMEDPLACE}}"
+    - "9..11||Site: {{rollTable SITE}}"
+    - "12||Faction Presence: {{rollTable FACTION}}"
 
 # ============================================================================
 # HAZARD TABLES
@@ -182,21 +182,21 @@ FEATURE:
 HAZARD:
   dice: 1d12
   entries:
-    - 1||{{rollTable hazardUnnatural}}
-    - 2..12||{{rollTable hazardNatural}}
+    - "1||{{rollTable hazardUnnatural}}"
+    - "2..12||{{rollTable hazardNatural}}"
 
 hazardUnnatural:
   dice: 1d12
   entries:
-    - 1..5||Taint/Blight/Curse - An evil or corrupting influence permeates this area
-    - 6..9||Magical [MAGIC], {{rollTable hazardNatural}}
-    - 10..11||Planar [ELEMENT], {{rollTable hazardNatural}} 
-    - 12||Divine [{{rollTable FotF_Details.ASPECT}}], {{rollTable hazardNatural}} 
+    - "1..5||Taint/Blight/Curse - An evil or corrupting influence permeates this area"
+    - "6..9||Magical [{{rollTable FotF_Details.MAGIC}}], {{rollTable hazardNatural}}"
+    - "10..11||Planar [{{rollTable FotF_Details.ELEMENT}}], {{rollTable hazardNatural}}" 
+    - "12||Divine [{{rollTable FotF_Details.ASPECT}}], {{rollTable hazardNatural}}" 
 
 hazardNatural:
   dice: 1d12
   entries:
-    - 1||Hazard stems from a strange phenomenon: {{rollTable FotF_Details.ODDITY}}
+    - "1||Hazard stems from a strange phenomenon: {{rollTable FotF_Details.ODDITY}}"
     - 2||Tectonic/Volcanic - Earthquake, lava flow, geothermal danger
     - 3..4||Unseen Pitfall - Chasm, crevasse, abyss, rift, cliff
     - 5..6||Ensnaring - Bog, mire, tarpit, quicksand, sinking mud
@@ -212,20 +212,20 @@ hazardNatural:
 OBSTACLE:
   dice: 1d12
   entries:
-    - 1||{{rollTable obstacleUnnatural}}
-    - 2..12||{{rollTable obstacleNatural}}
+    - "1||{{rollTable obstacleUnnatural}}"
+    - "2..12||{{rollTable obstacleNatural}}"
 
 obstacleUnnatural:
   dice: 1d12
   entries:
-    - 1..7||Magical [{{rollTable FotF_Details.MAGIC}}], {{rollTable areaNatural}}
-    - 8..11||Planar [{{rollTable FotF_Details.ELEMENT}}], {{rollTable areaNatural}}
-    - 12||Divine [{{rollTable FotF_Details.ASPECT}}], {{rollTable areaNatural}}
+    - "1..7||Magical [{{rollTable FotF_Details.MAGIC}}], {{rollTable areaNatural}}"
+    - "8..11||Planar [{{rollTable FotF_Details.ELEMENT}}], {{rollTable areaNatural}}"
+    - "12||Divine [{{rollTable FotF_Details.ASPECT}}], {{rollTable areaNatural}}"
 
 obstacleNatural:
   dice: 1d12
   entries:
-    - 1||Obstacle stems from a strange phenomenon: {{rollTable FotF_Details.ODDITY}}
+    - "1||Obstacle stems from a strange phenomenon: {{rollTable FotF_Details.ODDITY}}"
     - 2..3||Defensive - Barrier created by local creature or faction
     - 4..6||Impenetrable - Cliff, escarpment, crag, bluff, wall
     - 7..9||Penetrable - Dense forest/jungle, dense underbrush, impenetrable vegetation
@@ -238,22 +238,22 @@ obstacleNatural:
 AREA:
   dice: 1d12
   entries:
-    - 1||{{rollTable areaUnnatural}}
-    - 2..12||{{rollTable areaNatural}}
+    - "1||{{rollTable areaUnnatural}}"
+    - "2..12||{{rollTable areaNatural}}"
 
 areaUnnatural:
   dice: 1d12
   entries:
-    - 1..7||Magical [{{rollTable FotF_Details.MAGIC}}], {{rollTable areaNatural}}
-    - 8..11||Planar [{{rollTable FotF_Details.ELEMENT}}], {{rollTable areaNatural}}
-    - 12||Divine [{{rollTable FotF_Details.ASPECT}}], {{rollTable areaNatural}}
+    - "1..7||Magical [{{rollTable FotF_Details.MAGIC}}], {{rollTable areaNatural}}"
+    - "8..11||Planar [{{rollTable FotF_Details.ELEMENT}}], {{rollTable areaNatural}}"
+    - "12||Divine [{{rollTable FotF_Details.ASPECT}}], {{rollTable areaNatural}}"
 
 areaNatural:
   dice: 1d12
   entries:
-    - 1||Area distinguished by strange phenomena: {{rollTable FotF_Details.ODDITY}}
-    - 2..3||{{rollTable hazardNatural}}, expand its reach to define the area
-    - 4..5||{{rollTable obstacleNatural}}, expand its footprint to define the area
+    - "1||Area distinguished by strange phenomena: {{rollTable FotF_Details.ODDITY}}"
+    - "2..3||{{rollTable hazardNatural}}, expand its reach to define the area"
+    - "4..5||{{rollTable obstacleNatural}}, expand its footprint to define the area"
     - 6..7||Hunting/Gathering Ground - Territory of local creature
     - 8..9||Claimed Territory - Territory claimed by local faction
     - 10..12||Difficult Terrain - Icefield, rocky land, dense forest, scree, swamp
@@ -265,12 +265,12 @@ areaNatural:
 NAMEDPLACE:
   dice: 1d12
   entries:
-    - 1..2||The {{pick placeWords.PLACE}}
-    - 3..4||The {{pick placeWords.ADJECTIVE}} {{pick placeWords.PLACE}}
-    - 5..6||The {{pick placeWords.PLACE}} of (the) {{pick placeWords.NOUN}}
-    - 7..8||(The) {{pick placeWords.NOUN}}'s {{pick placeWords.PLACE}}
-    - 9..10||{{pick placeWords.PLACE}} of the {{pick placeWords.ADJECTIVE}} {{pick placeWords.NOUN}}
-    - 11..12||The {{pick placeWords.ADJECTIVE}} {{pick placeWords.NOUN}}
+    - "1..2||The {{pick placeWords.PLACE}}"
+    - "3..4||The {{pick placeWords.ADJECTIVE}} {{pick placeWords.PLACE}}"
+    - "5..6||The {{pick placeWords.PLACE}} of (the) {{pick placeWords.NOUN}}"
+    - "7..8||(The) {{pick placeWords.NOUN}}'s {{pick placeWords.PLACE}}"
+    - "9..10||{{pick placeWords.PLACE}} of the {{pick placeWords.ADJECTIVE}} {{pick placeWords.NOUN}}"
+    - "11..12||The {{pick placeWords.ADJECTIVE}} {{pick placeWords.NOUN}}"
 
 placeWords:
   PLACE: Barrier,Beach,Bowl,Camp,Cave,Circle,City,Cliff,Crater,Crossing,Crypt,Den,Ditch,Falls,Fence,Field,Fort,Gate,Grove,Hill,Hold,Hope,Horn,House,Keel,Keep,Lair,Lake,Leys,Lock,Loft,Lone,Lord,Mark,Mere,Mill,Mine,Mire,Moor,Moss,Mount,Mouth,Nest,Nook,Oath,Pale,Path,Peak,Peel,Pit,Pool,Port,Post,Pot,Press,Rift,Ring,Rise,Rock,Root,Ruin,Runes,Rush,Sail,Salt,Sand,Sands,Sea,Seal,Seat,Set,Shaft,Shale,Share,Shaw,Shelf,Shoal,Shore,Shot,Shoulder,Shred,Shroud,Shrine,Sill,Silt,Sink,Site,Sleet,Slope,Slough,Slow,Sly,Smoke,Snare,Snake,Snow,Soap,Sol,Soul,Sound,South,Spar,Spawn,Sphere,Spill,Spine,Spiral,Spit,Spoke,Spout,Spring,Spur,Square,Stair,Stake,Stalk,Stall,Stand,Star,Stark,Start,State,Stave,Stay,Stead,Steal,Stem,Stench,Step,Stern,Stew,Stiff,Still,Sting,Stink,Stint,Stock,Stoic,Stoke,Stole,Stomp,Stone,Stood,Stool,Stoop,Stop,Store,Stork,Storm,Story,Stout,Stove,Strap,Straw,Stray,Stream,Street,Stress,Stretch,Strew,Strict,Stride,Strife,Strike,String,Strip,Stroke,Stroll,Strong,Strove,Struck,Strung,Strut,Stub,Stuck,Stud,Study,Stuff,Stump,Stung,Stunk,Stunt,Stutter,Sty,Style,Swale,Swallow,Swamp,Swan,Swank,Swap,Swarm,Swash,Swath,Swathe,Sway,Swear,Sweat,Sweep,Sweet,Swell,Swept,Swerve,Swift,Swig,Swill,Swim,Swine,Swing,Swipe,Swirl,Swiss,Switch,Swoon,Swoop,Swore,Sworn,Swum,Swung,Tack,Table,Tablet,Taboo,Tabular,Tache,Tacit,Tack,Taco,Tact,Taffy,Tag,Tail,Tailor,Taint,Take,Talc,Tale,Talebearer,Talent,Talisman,Talk,Tall,Tally,Talon,Tamask,Tame,Tamer,Tamper,Tan,Tanager,Tandem,Tango,Tank,Tankage,Tankard,Tanker,Tanner,Tannery,Tannic,Tansy,Tantra,Tantrum,Tapa,Tape,Taper,Tapestry,Tapioca,Tapir,Tapis,Tapped,Tapper,Tappet,Tape,Tar,Tarantula,Tardy,Tare,Target,Tariff,Tarmac,Tarn,Tarnation,Tarnish,Tarok,Tarot,Tarp,Tarpan,Tarpon,Tarry,Tarsal,Tarsus,Tart,Tartan,Tartar,Tartly,Tartness,Tartrate,Tarty,Tarzan,Task,Tassel,Taste,Tasty,Tat,Tatami,Tatar,Tate,Tater,Tatlock,Tatter,Tatters,Tatting,Tattle,Tattler,Tattletale,Tattoo,Tatty,Tau,Taught,Taunt,Taurus,Taut,Tauten,Tauter,Tautly,Tautog,Tautology,Tautonym,Tautophony,Tavern,Tawdry,Tawer,Tawny,Tawse,Tax,Taxa,Taxable,Taxation,Taxed,Taxeme,Taxer,Taxes,Taxi,Taxiway,Taxied,Taxies,Taxiing,Taximeter,Taxing,Taxingly,Taxis,Taxite,Taxol,Taxology,Taxon,Taxonomy,Taxpayer,Taxway,Tchotchke,Tchick,Te,Tea,Teach,Teacher,Teaching,Teacake,Teacup,Teacups,Teaed,Teak,Teakettle,Teal,Team,Teamboat,Teamed,Teaming,Teams,Teammate,Teamster,Teamwork,Teapot,Tear,Tearaway,Teardrop,Tearful,Tearfully,Tearfulness,Tearing,Tearoom,Tears,Tearsheet,Tease,Teasel,Teaser,Teasingly,Teasle,Treasure,Teat,Teazel,Teazle,Teazone,Tebbutt,Tebet,Tebeth,Technic,Technical,Technicality,Technician,Technics,Technique,Techno,Technobabble,Technocracy,Technocrat,Technology,Technophile,Technophobe,Technophobic,Technostress,Techy,Teckel,Tectite,Tectonic,Tectonics,Tectorial,Tectrices,Tectrix,Tecum,Tec,Techy,Ted,Tedded,Tedder,Tedding,Tedded,Tedding,Teddies,Teddy,Tedious,Tediously,Tediousness,Tedium,Tee,Teeing,Teeing,Teem,Teeming,Teens,Teeny,Teensy,Teentsy,Teepee,Teepee,Tees,Teetered,Teetering,Teeters,Teeth,Teethe,Teething,Teeths,Teethes,Teetotal,Teetotaler,Teetotalism,Teetotum,Tef,Teff,Tefs,Teffs,Teg,Tegmen,Tegmental,Tegmentum,Tegminal,Tegminate,Tegula,Tegular,Tegularly,Tegulas,Tegumen,Tegument,Tegumen,Teguments,Teggs,Tegs,Tegular,Tegula,Tegulas,Tegulae,Tegulate,Tegulex,Teguli,Te,Tegg,Tegua,Tehama,Teheran,Tehee,Teheed,Teheeing,Tehees,Tehran,Tehsil,Tehsildar,Tehsiles,Tehsils,Teiidae,Teiid,Teiids,Teiines,Teind,Teinds,Teinier,Teinoscope,Teinture,Teins,Teiomycina,Teiph,Teipi,Teiresino,Teis,Teisai,Teisoku,Teita,Teitak,Tejas,Tejate,Tejedores,Tejedor,Tejedora,Tejate,Tejates,Tej,Tejate,Tejbread,Tejidos,Tejocote,Tejocotes,Tejones,Tejontates,Tejpat,Tejuelas,Tejuela,Tejuelas,Tejuelluela,Tejucate,Tejuelas,Tej,Tejidos,Tejon,Tejones,Tejuelas,Tejuela,Tejuelas,Tejuelluela,Tejucate,Tejuelas
@@ -285,11 +285,11 @@ SITE:
   dice: 1d10
   entries:
     - 1..2||DUNGEON - See dungeon generation procedure
-    - 3..4||{{rollTable LAIR}}
-    - 5..6||{{rollTable RUIN}}
-    - 7||{{rollTable OUTPOST}}
-    - 8..9||{{rollTable LANDMARK}}
-    - 10||{{rollTable RESOURCE}}
+    - "3..4||{{rollTable LAIR}}"
+    - "5..6||{{rollTable RUIN}}"
+    - "7||{{rollTable OUTPOST}}"
+    - "8..9||{{rollTable LANDMARK}}"
+    - "10||{{rollTable RESOURCE}}"
 
 LAIR:
   dice: 1d12
@@ -314,7 +314,7 @@ RUIN:
 OUTPOST:
   dice: 1d12
   entries:
-    - 1||{{pick UnnaturalOutpost}}
+    - "1||{{pick UnnaturalOutpost}}"
     - 2..3||FACTION outpost
     - 4..5||Tollhouse/Checkpoint
     - 6..8||Meeting/Trading post
@@ -322,37 +322,37 @@ OUTPOST:
     - 12||Tower/Fort/Base
 
 UnnaturalOutpost:
-  - {{rollTable FotF_Details.MAGIC}} outpost
-  - {{rollTable FotF_Details.ELEMENT}} outpost
-  - {{rollTable FotF_Details.ASPECT}} outpost
+  - "{{rollTable FotF_Details.MAGIC}} outpost"
+  - "{{rollTable FotF_Details.ELEMENT}} outpost"
+  - "{{rollTable FotF_Details.ASPECT}} outpost"
 
 LANDMARK:
   dice: 1d12
   entries:
-    - 1||Odd: {{pick FotF_Details.ODDITY}} landmark
+    - "1||Odd: {{pick FotF_Details.ODDITY}} landmark"
     - 2..4||Plant/Tree-based landmark
     - 5..7||Earth/Rock-based landmark
     - 8..9||Water-based landmark
     - 10||FACTION-based landmark
     - 11||Megalith/Obelisk/Statue
-    - 12||{{rollTable FotF_Details.MAGIC}} landmark
+    - "12||{{rollTable FotF_Details.MAGIC}} landmark"
 
 RESOURCE:
   dice: 1d12
   entries:
-    - 1||Odd: {{pick FotF_Details.ODDITY}} resource
+    - "1||Odd: {{pick FotF_Details.ODDITY}} resource"
     - 2..4||Game/Hide/Fur
     - 5..6||Timber/Clay/Stone
     - 7..8||Herb/Spice/Dye
     - 9..10||Copper/Tin/Iron
     - 11||Silver/Gold/Gems
-    - 12||{{rollTable FotF_Details.MAGIC}} resource
+    - "12||{{rollTable FotF_Details.MAGIC}} resource"
 
 # ============================================================================
 # FACTION TABLES
 # ============================================================================
 
-FACTION: {{rollTable factionTypeTable}}, {{rollTable factionGoalTable}}, {{rollTable factionConditionTable}}
+FACTION: "{{rollTable factionTypeTable}}, {{rollTable factionGoalTable}}, {{rollTable factionConditionTable}}"
 
 factionTypeTable:
   - Commoner/Peasant
@@ -366,7 +366,7 @@ factionTypeTable:
   - Nationalist/Loyalist
   - Immigrant/Outside/Foreigner  
   - Academic/Arcane
-  - {{unique (tSlice factionTypeTable 0 11) 2}}
+  - "{{unique (tSlice factionTypeTable 0 11) 2}}"
 
 factionGoalTable:
   dice: 1d12
@@ -617,7 +617,7 @@ MAGIC:
     - 6||enchantment/artifice
     - 7||transformation
     - 8||warding/binding
-    - 9..10||"{{rollTable ELEMENT}}"
+    - "9..10||{{rollTable ELEMENT}}"
     - 11||restoration/healing
     - 12||divination/scrying
 
@@ -659,7 +659,7 @@ TERRAIN:
     - 7..8||woodland/jungle
     - 9..10||highland/hills
     - 11||mountains
-    - 12||"{{altRollTable TERRAIN '1d10+1'}}" odd: "{{rollTable ODDITY}}"
+    - "12||{{altRollTable TERRAIN '1d10+1'}} odd: {{rollTable ODDITY}}"
 
 VISIBILITY:
   dice: 1d12
