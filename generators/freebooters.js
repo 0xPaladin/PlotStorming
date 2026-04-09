@@ -1,13 +1,22 @@
 const Region = `description: Tables to randomly generate regions for a fantasy setting.
 source: Freebooters on the Frontier 2nd Edition by Jason Lutes
 
+input:
+  - FotF_RegionFeatures
+
 output: |
   ## {{rollTable regionNameTemplate}}
-  {{setState state 'currentClimate' (ws regionClimate)}}
-  {{ws (lookup regionTerrain state.currentClimate)}}, {{state.currentClimate}}, {{rollTable regionSize}}, {{ws regionAlignment.neutral}}
+  {{setState state 'currentClimate' (ws regionClimate)}}{{setState state 'size' (rollTable regionSize)}}
+  {{ws (lookup regionTerrain state.currentClimate)}}, {{state.currentClimate}}, {{state.size}}, {{ws regionAlignment.neutral}}
+  Features: {{setState state 'featureCount' (rollTable regionFeatureCount)}}
+  {{loop state.featureCount}}
+    - {{FotF_RegionFeatures.output}}
+  {{/times}}
 
 state:
   currentClimate: temperate
+  size: sizable
+  featureCount: 1
 
 regionNameTemplate:
   dice: 1d12
@@ -58,89 +67,138 @@ const Creatures = `
 description: Tables to randomly generate creatures for a fantasy setting.
 source: Freebooters on the Frontier 2nd Edition by Jason Lutes
 
-output: {{lookup @root (ws creatureType)}}
+import: 
+  - FotF_Details
 
-creatureType: monster,unusual,beast,humanoid||2,4,2,5
+output: "{{rollTable CREATURE}}"
+
+CREATURE: 
+  dice: 1d12
+  entries:
+    - "1..4||Monster: {{MONSTER}}"
+    - "5..9||Beast: {{BEAST}}"
+    - "10..12||Humanoid: {{HUMANOID}}"
 
 # ============================================================================
 # CREATURE TYPES
 # ============================================================================
 
-monster: {{ws (lookup monsterTypes (ws monsterType))}}
+MONSTER: "{{rollTable monsterType}}"
 
-monsterType: extraplanarFoe,legendaryMonster,undead||2,5,3   
+monsterType: 
+  dice: 1d12
+  entries:
+    - "1||{{rollTable LEGENDARY_MONSTER}}"
+    - "2..3||{{rollTable EXTRAPLANAR}}"
+    - "4..12||{{rollTable FEARSOME_BEAST}}"
 
-monsterTypes:
-  extraplanarFoe: divine|demonic lord,angel|demon,cherub|imp,elemental (ELEMENT)||1,1,1,1,4
-  legendaryMonster: huge oddity,dragon|giant + BEAST,dragon|giant,BEAST + huge||1,1,1,5
-  undead: lich|vampire|mummy,wight|wraith,wisp|ghost|specter,skeleton|zombie|ghoul||1,1,2,4
+LEGENDARY_MONSTER
+  dice: 1d12
+  entries:
+    - "1..2||Oddity [{{rollTable FotF_Details.ODDITY}}] (huge)"
+    - "3..4||{{rollTable FotF_Details.ELEMENT}} {{pick 'Dragon,Titan'}} (huge)"
+    - "5..6||{{BEAST}} {{pick 'Dragon,Titan'}} (huge)"
+    - "7..9||{{rollTable FotF_Details.COLOR}} {{pick 'Dragon,Titan'}} (huge)"
+    - "10..12||{{BEAST}} (huge)"
 
-unusual: {{ws (lookup unusualTypes (ws unusualType))}}
+EXTRAPLANAR
+  dice: 1d12
+  entries:
+    - "1||{{pick 'Divine,Demonic'}} Lord [{{rollTable FotF_Details.ASPECT}}]"
+    - "2..3||{{rollTable FotF_Details.ELEMENT}} Elemental"
+    - 4..6||Demon
+    - "7..12||{{rollTable MAJORUNDEAD}}"
 
-unusualType: slime,beastly,wildHumanoid||2,4,4
+MAJORUNDEAD
+  dice: 1d12
+  entries:
+    - "1||Lich [{{rollTable FotF_Details.MAGIC}}]"
+    - 2..4||Vampire
+    - 5..7||Death Knight
+    - 8..10||Wraith
+    - 11..12||Ghost
 
-unusualTypes: 
-  slime: slime|ooze|jelly,plant|fungus|parasite,golem|homunculus,fey|fairy||3,3,1,1
-  beastly: BEAST + ABERRANCE,BEAST + ELEMENT,BEAST + ODDITY,BEAST + ABILITY,BEAST + BEAST||1,1,1,2,3
-  wildHumanoid: ogre|troll,orc|hobgoblin|gnoll,goblin|kobold,HUMANOID + ODDITY,HUMANOID + BEAST||1,2,3,1,1
+MINORUNDEAD
+  dice: 1d12
+  entries:
+    - 1..2||Zombie
+    - 3..4||Skeleton
+    - 5..6||Ghoul
+    - 7..8||Wight
+    - 9..10||Specter
+    - 11..12||Shadow
 
-beast: {{pick (lookup beastTypes (ws beastType))}}
+FEARSOME_BEAST
+  dice: 1d12
+  entries:
+    - "1..3||{{BEAST}} {{ABILITY}}"
+    - "4..5||{{BEAST}} {{ODDITY}}"
+    - "6..7||Chimera: {{BEAST}}/{{BEAST}}"
+    - "8..10||Slime/Ooze"
+    - "11..12||Plant/Fungus"
+  
+BEAST: "{{rollTable beastType}}"
 
-beastType: waterGoing,airborne,earthbound||2,3,5
+beastType:
+  dice: 1d12
+  entries:
+    - "1..2||{{rollTable WATERGOING}}"
+    - "3..5||{{rollTable AIRBORNE}}"
+    - "6..12||{{rollTable EARTHBOUND}}"
 
-beastTypes:
-  waterGoing: 
-    - whale/narwhal
-    - squid/octopus
-    - dolphin/shark/alligator
-    - turtle/clam/snail/crab
-    - fish/eel/snake,frog/toad
-    - jelly/anemone
-    - insect/barnacle
-  airborne: 
-    - pteranadon/condor
-    - eagle/owl/hawk/falcon
-    - heron/crane/ostrich
-    - crow/raven/gull
-    - songbird/parrot
-    - chicken/duck/goose
-    - bee/wasp/hornet/locust
-    - butterfly/moth/mosquito
-  earthbound: 
-    - dinosaur/elephant
-    - ox/rhino/bear/apex
-    - deer/horse/camel
-    - panther/wolf/boar
-    - snake/lizard/armadillo
-    - mouse/rat/weasel/cat
-    - ant/centipede/scorpion
-    - slug/worm/tick/beetle
+WATERGOING: 
+  - whale/narwhal
+  - squid/octopus
+  - dolphin/shark/alligator
+  - turtle/clam/snail/crab
+  - fish/eel/snake,frog/toad
+  - jelly/anemone
+  - insect/barnacle
+  
+AIRBORNE: 
+  - pteranadon/condor
+  - eagle/owl/hawk/falcon
+  - heron/crane/ostrich
+  - crow/raven/gull
+  - songbird/parrot
+  - chicken/duck/goose
+  - bee/wasp/hornet/locust
+  - butterfly/moth/mosquito
 
-HUMANOID: {{rollTable humanoidType}}
+EARTHBOUND: 
+  - dinosaur/elephant
+  - ox/rhino/bear/apex
+  - deer/horse/camel
+  - panther/wolf/boar
+  - snake/lizard/armadillo
+  - mouse/rat/weasel/cat
+  - ant/centipede/scorpion
+  - slug/worm/tick/beetle
+
+HUMANOID: "{{rollTable humanoidType}}"
 
 humanoidType:
   dice: 1d12
   entries: 
-    - 1..2||{{rollTable RAREHUMANOID}}
-    - 3..5||{{rollTable UNCOMMONHUMANOID}}
-    - 6..12||{{rollTable COMMONHUMANOID}}
+    - "1..2||{{rollTable RAREHUMANOID}}"
+    - "3..5||{{rollTable UNCOMMONHUMANOID}}"
+    - "6..12||{{rollTable COMMONHUMANOID}}"
 
 RAREHUMANOID:
   dice: 1d12
   entries: 
-    - 1..2||human + MONSTER
-    - 3-4||major UNDEAD
-    - 4-6||wereBEAST
-    - 7..8||human + BEAST
-    - 9..10||fay/fairy (tiny)
-    - 11..12||elf
+    - "1..2||{{rollTable MAJORUNDEAD}}"
+    - "3..4||Lycanthrope [{{rollTable EARTHBOUND}}]"
+    - "5..8||{{BEAST}}-folk"
+    - 9..10||Fay/Fairy (tiny)
+    - 11..12||Elf
 
 UNCOMMONHUMANOID:
   dice: 1d12
   entries:
     - 1||Cyclops/Giant (huge)
     - 2..3||Ogre/Troll (large)
-    - 4..7||minor UNDEAD
+    - "4..7||{{rollTable MINORUNDEAD}}"
     - 8||Lizardfolk/Merfolk
     - 9||Catfolk/Birdfolk
     - 10..12||Dwarf/Gnome (small)
