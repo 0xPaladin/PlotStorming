@@ -153,7 +153,7 @@ COMMONHUMANOID:
     - 6..7||Half-Orc/Half-Elf etc.
     - 8..9||Halfling (small)
     - 10..12||Mixed Party (group)
-`
+`;
 
 const RegionFeatures = `description: Tables to randomly generate region features for a fantasy setting.
 source: Freebooters on the Frontier 2nd Edition by Jason Lutes
@@ -659,7 +659,7 @@ TERRAIN:
     - 7..8||woodland/jungle
     - 9..10||highland/hills
     - 11||mountains
-    - 12||{{rollTable TERRAIN "1d10+1"}} odd: {{rollTable ODDITY}}
+    - 12||{{altRollTable TERRAIN "1d10+1"}} odd: {{rollTable ODDITY}}
 
 VISIBILITY:
   dice: 1d12

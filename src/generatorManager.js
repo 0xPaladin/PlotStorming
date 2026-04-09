@@ -25,10 +25,10 @@ handlebars.registerHelper("ws", function (str) {
   return res;
 });
 
-//roll from table given table object
-handlebars.registerHelper("rollTable", function (table, altDie = null) {
-  //if no dice push to Pick  
+const RollTable = (table, altDie = null) => {
+  //if no dice push to Pick
   if (!table.dice) {
+    console.log(table);
     return Pick(table.entries || table);
   }
 
@@ -49,25 +49,38 @@ handlebars.registerHelper("rollTable", function (table, altDie = null) {
   //return value
   const [range, value] = entry.split("||");
   return value;
+};
+
+//roll from table given table object
+handlebars.registerHelper("altRollTable", function (table, altDie = null) {
+  return RollTable(table, altDie);
+});
+
+//roll from table given table object
+handlebars.registerHelper("rollTable", function (table) {
+  return RollTable(table);
 });
 
 //pick unique N from array
 handlebars.registerHelper("unique", function (toPick, n) {
-  const arr = typeof toPick === "string"
-    ? toPick.split(",").map((str) => str.trim())
-    : toPick
+  const arr =
+    typeof toPick === "string"
+      ? toPick.split(",").map((str) => str.trim())
+      : toPick;
 
-  //have to remove duplicates in the array first 
-  return RNG.shuffle([...new Set(arr)]).slice(0, n);
+  //have to remove duplicates in the array first
+  return RNG.shuffle([...new Set(arr)]).slice(0, Number(n));
 });
 
 //pick n from array
 handlebars.registerHelper("pickN", function (toPick, n) {
-  return Array.from({ length: n }, () => Pick(
-    typeof toPick === "string"
-      ? toPick.split(",").map((str) => str.trim())
-      : toPick,
-  ));
+  return Array.from({ length: Number(n) }, () =>
+    Pick(
+      typeof toPick === "string"
+        ? toPick.split(",").map((str) => str.trim())
+        : toPick,
+    ),
+  );
 });
 
 //pick from array
@@ -80,9 +93,11 @@ handlebars.registerHelper("pick", function (toPick) {
 });
 
 //slice array
-handlebars.registerHelper("slice", function (arr, start, end) {
-  return (typeof arr === "string" ? arr.split(",").map(str => str.trim()) : arr)
-    .slice(Number(start), Number(end));
+handlebars.registerHelper("tSlice", function (arr, start, end) {
+  console.log(arr, start, end);
+  return (
+    typeof arr === "string" ? arr.split(",").map((str) => str.trim()) : arr
+  ).slice(Number(start), Number(end));
 });
 
 //roll dice
@@ -188,17 +203,17 @@ export class GeneratorManager {
       //loop until no more templates
       while (final.includes("{{")) {
         //compile template
-        const template = handlebars.compile(final);
+        const template = handlebars.compile(final)(data);
         //render
-        final = Pick(template(data));
-        console.log(final);
+        final = Pick(template);
+        //console.log(final);
       }
 
       return final;
     } catch (e) {
       this.app.notify({
         title: "Error",
-        message: e.message,
+        message: e.toString(),
         color: "red",
       });
     }
@@ -214,7 +229,7 @@ export class GeneratorManager {
         <span
           class="pointer dim bg-light-gray ba br2 b--black pa2 f4 absolute top-0 right-0"
           onClick=${() =>
-        this.app.setSelected("generatorResult", this.evaluate(content))}
+            this.app.setSelected("generatorResult", this.evaluate(content))}
           >▶︎</span
         >
         <textarea
