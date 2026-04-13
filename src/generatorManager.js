@@ -14,7 +14,6 @@ handlebars.registerHelper("setState", function (state, key, val) {
 
 //weighted string
 handlebars.registerHelper("ws", function (str) {
-  console.log(str);
   const [values, weights] = str.split("||");
   let res = RNG.weighted(values.split(","), weights.split(",").map(Number));
   //check for nested via /
@@ -82,6 +81,12 @@ handlebars.registerHelper("pickN", function (toPick, n) {
   );
 });
 
+//split string and pick
+handlebars.registerHelper("slashSplit", function (toPick) {
+  const arr = toPick.split("/");
+  return Pick(arr);
+});
+
 //pick from array
 handlebars.registerHelper("pick", function (toPick) {
   return Pick(
@@ -115,10 +120,11 @@ handlebars.registerHelper("eq", function (a, b) {
 });
 
 //loop
-handlebars.registerHelper("loop", function (n, block) {
-  var accum = "";
-  for (var i = 0; i < n; ++i) accum += block.fn(i);
-  return accum;
+handlebars.registerHelper("loop", function (n, what) {
+  //console.log(what, context.data.root);
+  var ret = "";
+  for (var i = 0; i < n; ++i) ret += `\n- ${what}`;
+  return ret;
 });
 
 //roll dice
@@ -182,15 +188,39 @@ export class GeneratorManager {
 
   getImports(toImport) {
     const CM = this.app.ContentManager;
-    //get content
-    const content = toImport.map((name) => [
-      name,
-      CM.all.find((c) => c.name === name),
-    ]);
-    //parse
-    const parsed = content.map((c) => [c[0], parse(c[1].text)]);
-    //return object, keys are the name of the content, values are the parsed data
-    return Object.fromEntries(parsed);
+    //structure for imports
+    const imported = [];
+    const parsed = {};
+    //loop until no more nested imports
+    while (toImport.length > 0) {
+      toImport.forEach((name) => {
+        imported.push(name);
+        //get content
+        const content = CM.all.find((c) => c.name === name);
+        //parse
+        parsed[name] = parse(content.text);
+        //check for nested imports
+        (parsed[name].import || [])
+          .filter((i) => !toImport.concat(imported).includes(i))
+          .forEach((i) => toImport.push(i));
+        //remove from toImport
+        toImport = toImport.filter((i) => !imported.includes(i));
+      });
+    }
+
+    //create a compiled data object, set every "output" to name_output
+    const compiled = {};
+    Object.entries(parsed).forEach(([name, data]) => {
+      //loop through data and add direct values to compiled
+      Object.entries(data).forEach(([key, value]) => {
+        key === "output"
+          ? (compiled[`${name}_output`] = value)
+          : (compiled[key] = value);
+      });
+    });
+
+    //reutrn compiled
+    return compiled;
   }
 
   evaluate(content) {

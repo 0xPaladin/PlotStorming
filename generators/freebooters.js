@@ -1,17 +1,16 @@
 const Region = `description: Tables to randomly generate regions for a fantasy setting.
 source: Freebooters on the Frontier 2nd Edition by Jason Lutes
 
-input:
+import:
   - FotF_RegionFeatures
 
 output: |
   ## {{rollTable regionNameTemplate}}
   {{setState state 'currentClimate' (ws regionClimate)}}{{setState state 'size' (rollTable regionSize)}}
   {{ws (lookup regionTerrain state.currentClimate)}}, {{state.currentClimate}}, {{state.size}}, {{ws regionAlignment.neutral}}
-  Features: {{setState state 'featureCount' (rollTable regionFeatureCount)}}
-  {{loop state.featureCount}}
-    - {{FotF_RegionFeatures.output}}
-  {{/times}}
+
+  ### Features: {{setState state 'featureCount' (roll (lookup regionFeatureCount state.size))}}
+  {{#loop state.featureCount FotF_RegionFeatures_output}}{{/loop}}
 
 state:
   currentClimate: temperate
@@ -92,33 +91,41 @@ monsterType:
     - "2..3||{{rollTable EXTRAPLANAR}}"
     - "4..12||{{rollTable FEARSOME_BEAST}}"
 
-LEGENDARY_MONSTER
+DRAGONTITAN: 
+  - Dragon
+  - Titan
+
+LEGENDARY_MONSTER:
   dice: 1d12
   entries:
-    - "1..2||Oddity [{{rollTable FotF_Details.ODDITY}}] (huge)"
-    - "3..4||{{rollTable FotF_Details.ELEMENT}} {{pick 'Dragon,Titan'}} (huge)"
-    - "5..6||{{BEAST}} {{pick 'Dragon,Titan'}} (huge)"
-    - "7..9||{{rollTable FotF_Details.COLOR}} {{pick 'Dragon,Titan'}} (huge)"
+    - "1..2||Oddity [{{rollTable ODDITY}}] (huge)"
+    - "3..4||{{rollTable ELEMENT}} {{rollTable DRAGONTITAN}} (huge)"
+    - "5..6||{{BEAST}} {{rollTable DRAGONTITAN}} (huge)"
+    - "7..9||{{rollTable COLOR}} {{rollTable DRAGONTITAN}} (huge)"
     - "10..12||{{BEAST}} (huge)"
 
-EXTRAPLANAR
+DIVINEDEMONIC: 
+  - Divine
+  - Demonic
+
+EXTRAPLANAR:
   dice: 1d12
   entries:
-    - "1||{{pick 'Divine,Demonic'}} Lord [{{rollTable FotF_Details.ASPECT}}]"
-    - "2..3||{{rollTable FotF_Details.ELEMENT}} Elemental"
+    - "1||{{rollTable DIVINEDEMONIC}} Lord [{{rollTable ASPECT}}]"
+    - "2..3||{{rollTable ELEMENT}} Elemental"
     - 4..6||Demon
     - "7..12||{{rollTable MAJORUNDEAD}}"
 
-MAJORUNDEAD
+MAJORUNDEAD:
   dice: 1d12
   entries:
-    - "1||Lich [{{rollTable FotF_Details.MAGIC}}]"
+    - "1||Lich [{{rollTable MAGIC}}]"
     - 2..4||Vampire
     - 5..7||Death Knight
     - 8..10||Wraith
     - 11..12||Ghost
 
-MINORUNDEAD
+MINORUNDEAD:
   dice: 1d12
   entries:
     - 1..2||Zombie
@@ -128,11 +135,11 @@ MINORUNDEAD
     - 9..10||Specter
     - 11..12||Shadow
 
-FEARSOME_BEAST
+FEARSOME_BEAST:
   dice: 1d12
   entries:
-    - "1..3||{{BEAST}} {{ABILITY}}"
-    - "4..5||{{BEAST}} {{ODDITY}}"
+    - "1..3||{{BEAST}}, ability: {{rollTable ABILITY}}"
+    - "4..5||{{BEAST}}, oddity: {{rollTable ODDITY}}"
     - "6..7||Chimera: {{BEAST}}/{{BEAST}}"
     - "8..10||Slime/Ooze"
     - "11..12||Plant/Fungus"
@@ -142,16 +149,17 @@ BEAST: "{{rollTable beastType}}"
 beastType:
   dice: 1d12
   entries:
-    - "1..2||{{rollTable WATERGOING}}"
-    - "3..5||{{rollTable AIRBORNE}}"
-    - "6..12||{{rollTable EARTHBOUND}}"
+    - "1..2||{{slashSplit (rollTable WATERGOING)}}"
+    - "3..5||{{slashSplit (rollTable AIRBORNE)}}"
+    - "6..12||{{slashSplit (rollTable EARTHBOUND)}}"
 
 WATERGOING: 
   - whale/narwhal
   - squid/octopus
   - dolphin/shark/alligator
   - turtle/clam/snail/crab
-  - fish/eel/snake,frog/toad
+  - fish/eel/snake
+  - frog/toad
   - jelly/anemone
   - insect/barnacle
   
@@ -167,7 +175,7 @@ AIRBORNE:
 
 EARTHBOUND: 
   - dinosaur/elephant
-  - ox/rhino/bear/apex
+  - ox/rhino/bear/apex hunter
   - deer/horse/camel
   - panther/wolf/boar
   - snake/lizard/armadillo
@@ -210,8 +218,7 @@ COMMONHUMANOID:
     - 3..5||Goblin/Kobold (small)
     - 6..7||Half-Orc/Half-Elf etc.
     - 8..9||Halfling (small)
-    - 10..12||Mixed Party (group)
-`;
+    - 10..12||Mixed Party (group)`;
 
 const RegionFeatures = `description: Tables to randomly generate region features for a fantasy setting.
 source: Freebooters on the Frontier 2nd Edition by Jason Lutes
@@ -225,13 +232,13 @@ output: "{{rollTable FEATURE}}"
 FEATURE:
   dice: 1d12
   entries:
-    - "1..4||Creature: {{FotF_Creatures.output}}"
+    - "1..4||Creature: {{FotF_Creatures_output}}"
     - "5||Hazard: {{rollTable HAZARD}}"
     - "6||Obstacle: {{rollTable OBSTACLE}}"
     - "7||Area: {{rollTable AREA}}"
     - "8||Named Place: {{rollTable NAMEDPLACE}}"
     - "9..11||Site: {{rollTable SITE}}"
-    - "12||Faction Presence: {{rollTable FACTION}}"
+    - "12||Faction Presence: {{FACTION}}"
 
 # ============================================================================
 # HAZARD TABLES
@@ -247,14 +254,14 @@ hazardUnnatural:
   dice: 1d12
   entries:
     - "1..5||Taint/Blight/Curse - An evil or corrupting influence permeates this area"
-    - "6..9||Magical [{{rollTable FotF_Details.MAGIC}}], {{rollTable hazardNatural}}"
-    - "10..11||Planar [{{rollTable FotF_Details.ELEMENT}}], {{rollTable hazardNatural}}" 
-    - "12||Divine [{{rollTable FotF_Details.ASPECT}}], {{rollTable hazardNatural}}" 
+    - "6..9||Magical [{{rollTable MAGIC}}], {{rollTable hazardNatural}}"
+    - "10..11||Planar [{{rollTable ELEMENT}}], {{rollTable hazardNatural}}" 
+    - "12||Divine [{{rollTable ASPECT}}], {{rollTable hazardNatural}}" 
 
 hazardNatural:
   dice: 1d12
   entries:
-    - "1||Hazard stems from a strange phenomenon: {{rollTable FotF_Details.ODDITY}}"
+    - "1||Hazard stems from a strange phenomenon: {{rollTable ODDITY}}"
     - 2||Tectonic/Volcanic - Earthquake, lava flow, geothermal danger
     - 3..4||Unseen Pitfall - Chasm, crevasse, abyss, rift, cliff
     - 5..6||Ensnaring - Bog, mire, tarpit, quicksand, sinking mud
@@ -276,14 +283,14 @@ OBSTACLE:
 obstacleUnnatural:
   dice: 1d12
   entries:
-    - "1..7||Magical [{{rollTable FotF_Details.MAGIC}}], {{rollTable areaNatural}}"
-    - "8..11||Planar [{{rollTable FotF_Details.ELEMENT}}], {{rollTable areaNatural}}"
-    - "12||Divine [{{rollTable FotF_Details.ASPECT}}], {{rollTable areaNatural}}"
+    - "1..7||Magical [{{rollTable MAGIC}}], {{rollTable areaNatural}}"
+    - "8..11||Planar [{{rollTable ELEMENT}}], {{rollTable areaNatural}}"
+    - "12||Divine [{{rollTable ASPECT}}], {{rollTable areaNatural}}"
 
 obstacleNatural:
   dice: 1d12
   entries:
-    - "1||Obstacle stems from a strange phenomenon: {{rollTable FotF_Details.ODDITY}}"
+    - "1||Obstacle stems from a strange phenomenon: {{rollTable ODDITY}}"
     - 2..3||Defensive - Barrier created by local creature or faction
     - 4..6||Impenetrable - Cliff, escarpment, crag, bluff, wall
     - 7..9||Penetrable - Dense forest/jungle, dense underbrush, impenetrable vegetation
@@ -302,14 +309,14 @@ AREA:
 areaUnnatural:
   dice: 1d12
   entries:
-    - "1..7||Magical [{{rollTable FotF_Details.MAGIC}}], {{rollTable areaNatural}}"
-    - "8..11||Planar [{{rollTable FotF_Details.ELEMENT}}], {{rollTable areaNatural}}"
-    - "12||Divine [{{rollTable FotF_Details.ASPECT}}], {{rollTable areaNatural}}"
+    - "1..7||Magical [{{rollTable MAGIC}}], {{rollTable areaNatural}}"
+    - "8..11||Planar [{{rollTable ELEMENT}}], {{rollTable areaNatural}}"
+    - "12||Divine [{{rollTable ASPECT}}], {{rollTable areaNatural}}"
 
 areaNatural:
   dice: 1d12
   entries:
-    - "1||Area distinguished by strange phenomena: {{rollTable FotF_Details.ODDITY}}"
+    - "1||Area distinguished by strange phenomena: {{rollTable ODDITY}}"
     - "2..3||{{rollTable hazardNatural}}, expand its reach to define the area"
     - "4..5||{{rollTable obstacleNatural}}, expand its footprint to define the area"
     - 6..7||Hunting/Gathering Ground - Territory of local creature
@@ -331,9 +338,9 @@ NAMEDPLACE:
     - "11..12||The {{pick placeWords.ADJECTIVE}} {{pick placeWords.NOUN}}"
 
 placeWords:
-  PLACE: Barrier,Beach,Bowl,Camp,Cave,Circle,City,Cliff,Crater,Crossing,Crypt,Den,Ditch,Falls,Fence,Field,Fort,Gate,Grove,Hill,Hold,Hope,Horn,House,Keel,Keep,Lair,Lake,Leys,Lock,Loft,Lone,Lord,Mark,Mere,Mill,Mine,Mire,Moor,Moss,Mount,Mouth,Nest,Nook,Oath,Pale,Path,Peak,Peel,Pit,Pool,Port,Post,Pot,Press,Rift,Ring,Rise,Rock,Root,Ruin,Runes,Rush,Sail,Salt,Sand,Sands,Sea,Seal,Seat,Set,Shaft,Shale,Share,Shaw,Shelf,Shoal,Shore,Shot,Shoulder,Shred,Shroud,Shrine,Sill,Silt,Sink,Site,Sleet,Slope,Slough,Slow,Sly,Smoke,Snare,Snake,Snow,Soap,Sol,Soul,Sound,South,Spar,Spawn,Sphere,Spill,Spine,Spiral,Spit,Spoke,Spout,Spring,Spur,Square,Stair,Stake,Stalk,Stall,Stand,Star,Stark,Start,State,Stave,Stay,Stead,Steal,Stem,Stench,Step,Stern,Stew,Stiff,Still,Sting,Stink,Stint,Stock,Stoic,Stoke,Stole,Stomp,Stone,Stood,Stool,Stoop,Stop,Store,Stork,Storm,Story,Stout,Stove,Strap,Straw,Stray,Stream,Street,Stress,Stretch,Strew,Strict,Stride,Strife,Strike,String,Strip,Stroke,Stroll,Strong,Strove,Struck,Strung,Strut,Stub,Stuck,Stud,Study,Stuff,Stump,Stung,Stunk,Stunt,Stutter,Sty,Style,Swale,Swallow,Swamp,Swan,Swank,Swap,Swarm,Swash,Swath,Swathe,Sway,Swear,Sweat,Sweep,Sweet,Swell,Swept,Swerve,Swift,Swig,Swill,Swim,Swine,Swing,Swipe,Swirl,Swiss,Switch,Swoon,Swoop,Swore,Sworn,Swum,Swung,Tack,Table,Tablet,Taboo,Tabular,Tache,Tacit,Tack,Taco,Tact,Taffy,Tag,Tail,Tailor,Taint,Take,Talc,Tale,Talebearer,Talent,Talisman,Talk,Tall,Tally,Talon,Tamask,Tame,Tamer,Tamper,Tan,Tanager,Tandem,Tango,Tank,Tankage,Tankard,Tanker,Tanner,Tannery,Tannic,Tansy,Tantra,Tantrum,Tapa,Tape,Taper,Tapestry,Tapioca,Tapir,Tapis,Tapped,Tapper,Tappet,Tape,Tar,Tarantula,Tardy,Tare,Target,Tariff,Tarmac,Tarn,Tarnation,Tarnish,Tarok,Tarot,Tarp,Tarpan,Tarpon,Tarry,Tarsal,Tarsus,Tart,Tartan,Tartar,Tartly,Tartness,Tartrate,Tarty,Tarzan,Task,Tassel,Taste,Tasty,Tat,Tatami,Tatar,Tate,Tater,Tatlock,Tatter,Tatters,Tatting,Tattle,Tattler,Tattletale,Tattoo,Tatty,Tau,Taught,Taunt,Taurus,Taut,Tauten,Tauter,Tautly,Tautog,Tautology,Tautonym,Tautophony,Tavern,Tawdry,Tawer,Tawny,Tawse,Tax,Taxa,Taxable,Taxation,Taxed,Taxeme,Taxer,Taxes,Taxi,Taxiway,Taxied,Taxies,Taxiing,Taximeter,Taxing,Taxingly,Taxis,Taxite,Taxol,Taxology,Taxon,Taxonomy,Taxpayer,Taxway,Tchotchke,Tchick,Te,Tea,Teach,Teacher,Teaching,Teacake,Teacup,Teacups,Teaed,Teak,Teakettle,Teal,Team,Teamboat,Teamed,Teaming,Teams,Teammate,Teamster,Teamwork,Teapot,Tear,Tearaway,Teardrop,Tearful,Tearfully,Tearfulness,Tearing,Tearoom,Tears,Tearsheet,Tease,Teasel,Teaser,Teasingly,Teasle,Treasure,Teat,Teazel,Teazle,Teazone,Tebbutt,Tebet,Tebeth,Technic,Technical,Technicality,Technician,Technics,Technique,Techno,Technobabble,Technocracy,Technocrat,Technology,Technophile,Technophobe,Technophobic,Technostress,Techy,Teckel,Tectite,Tectonic,Tectonics,Tectorial,Tectrices,Tectrix,Tecum,Tec,Techy,Ted,Tedded,Tedder,Tedding,Tedded,Tedding,Teddies,Teddy,Tedious,Tediously,Tediousness,Tedium,Tee,Teeing,Teeing,Teem,Teeming,Teens,Teeny,Teensy,Teentsy,Teepee,Teepee,Tees,Teetered,Teetering,Teeters,Teeth,Teethe,Teething,Teeths,Teethes,Teetotal,Teetotaler,Teetotalism,Teetotum,Tef,Teff,Tefs,Teffs,Teg,Tegmen,Tegmental,Tegmentum,Tegminal,Tegminate,Tegula,Tegular,Tegularly,Tegulas,Tegumen,Tegument,Tegumen,Teguments,Teggs,Tegs,Tegular,Tegula,Tegulas,Tegulae,Tegulate,Tegulex,Teguli,Te,Tegg,Tegua,Tehama,Teheran,Tehee,Teheed,Teheeing,Tehees,Tehran,Tehsil,Tehsildar,Tehsiles,Tehsils,Teiidae,Teiid,Teiids,Teiines,Teind,Teinds,Teinier,Teinoscope,Teinture,Teins,Teiomycina,Teiph,Teipi,Teiresino,Teis,Teisai,Teisoku,Teita,Teitak,Tejas,Tejate,Tejedores,Tejedor,Tejedora,Tejate,Tejates,Tej,Tejate,Tejbread,Tejidos,Tejocote,Tejocotes,Tejones,Tejontates,Tejpat,Tejuelas,Tejuela,Tejuelas,Tejuelluela,Tejucate,Tejuelas,Tej,Tejidos,Tejon,Tejones,Tejuelas,Tejuela,Tejuelas,Tejuelluela,Tejucate,Tejuelas
-  ADJECTIVE: Ancient,Ashen,Black,Bloody,Blue,Bright,Broken,Burning,Clouded,Copper,Cracked,Dark,Dead,Desolate,Doomed,Endless,Eternal,Fallen,Far,Fearsome,Fell,Fey,Fiery,Fleeting,Floating,Forbidden,Forsaken,Frozen,Ghostly,Gilded,Glimmering,Golden,Gray,Grim,Grizzled,Harsh,Haunted,Hidden,High,Hollow,Holy,Howling,Humble,Hungry,Immortal,Impassable,Inky,Iron,Jagged,Joyful,Keen,Key,Kindly,Known,Knotted,Labored,Laced,Laden,Lawless,Leaden,Leafy,Leaky,Leaning,Learned,Leering,Leery,Legal,Lethal,Leveled,Lewing,Lexical,Lewd,Lexicon,Liberty,Lidden,Lifeless,Lifelong,Lifted,Light,Likely,Liminal,Limited,Linear,Linked,Lurid,Lorn,Loud,Loveless,Lovely,Lowering,Lowly,Loyal,Lucky,Lucid,Luminous,Macabre,Maddened,Majestic,Major,Malign,Manifold,Many,Marred,Marsh,Martial,Masked,Massive,Mastered,Matchless,Material,Mattered,Mature,Maximal,Maze-,Meager,Meager,Meadowlike,Meager,Meaning,Measured,Mechanical,Mediaeval,Medial,Medicinal,Medieval,Mediocre,Medium,Medley,Meek,Mellow,Melodic,Melodious,Melon,Melted,Memorable,Memorable,Memorial,Memorable,Memorized,Memory,Menacing,Mendacious,Mending,Mental,Mentioned,Mercenary,Merciful,Mercurial,Mere,Merged,Meridian,Meridian,Meritorious,Merlin,Merry,Meshed,Mesmerized,Mesotherm,Mesquite,Mess,Messed,Messiah,Messiest,Messily,Messing,Messy,Met,Metabolic,Metallic,Metameric,Metaphoric,Metaphysical,Meteoric,Meteoro,Meteorological,Meteorologic,Meter,Method,Methodical,Methodic,Methodise,Methodize,Methodized,Methodizing,Methodism,Methodist,Methodistic,Methodistically,Methodolatry,Methodologic,Methodological,Methodology,Methoxy,Met,Methuselah,Methylated,Methylamine,Methylated,Methylene,Methylenedianiline,Methylic,Methylidenedianiline,Methyls,Methylsulfate,Methological,Methyl,Methyolate,Methysis,Methylal,Methylamine,Methyl,Methylate,Methylated,Methylating,Methylation,Methylator,Methylators,Methylated,Methylating,Methylation,Methylator,Methylators,Methylated,Methylating,Methylation,Methyl,Methylated,Methylating,Methylation,Methylated,Methylating,Methylation,Methylated,Methylating,Methylation,Methylated,Methylating,Methylation,Methylated,Methylating,Methylation,Methylated,Methylating,Methylation,Methyl,Meticulee,Meticulous,Meticulously,Meticulousness,Métier,Métier,Metier,Metif,Metiff,Metiff,Metifferent,Metifferent,Metifferent,Metifferent,Metifferential,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferential,Metifferent,Metifferential,Metifferentiation,Metifferentialiated,Metifferentialiated,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimo,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimosa,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimo,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimosa,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimo,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimosa,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimo,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimosa,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimo,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimosa,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimo,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimosa,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimo,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimosa,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimo,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagos,Lagrimosa
-  NOUN: Ash,Arm,Blood,Bone,Child,Cinder,Corpse,Crystal,Dagger,Death,Demon,Devil,Doom,Eye,Fear,Finger,Fire,Foot,Ghost,Hand,Heart,King,Knight,Lord,Mist,Queen,Rain,Refuge,Regret,Rider,Ring,Sage,Savior,Shadow,Skull,Sky,Snake,Sorrow,Storm,Sun,Sword,Thorn,Thunder,Tower,Traitor,Troll,Tyrant,Void,War,Water,Whirlwind,Widow,Wight,Witch,Wizard,Wolf,Worm,Wound,Wraith,Wreck,Wren,Wretch,Wrinkle
+  PLACE: Barrier,Beach,Bowl,Camp,Cave,Circle,City,Cliff,Crater,Crossing,Crypt,Den,Ditch,Falls,Fence,Field,Fort,Gate,Grove,Hill,Hole,Hut,Keep,Lake,Marsh,Meadow,Mountain,Pit,Post,Ridge,Ring,Rise,Road,Rock,Ruin,Shrine,Spire,Spring,Stone,Tangle,Temple,Throne,Tomb,Tower,Town,Tree,Vale,Valley,Village,Wall
+  ADJECTIVE: Ancient,Ashen,Black,Bloody,Blue,Bright,Broken,Burning,Clouded,Copper,Cracked,Dark,Dead,Doomed,Endless,Fallen,Far,Fearsome,Floating,Forbidden,Frozen,Ghostly,Gloomy,Golden,Grim,Hidden,High,Iron,Jagged,Lonely,Lost,Low,Near,Petrified,Red,Screaming,Sharp,Shattered,Shifting,Shining,Shivering,Shrouded,Silver,Stalwart,Stoney,Sunken,Thorny,Thundering,White,Withered
+  NOUN: Arm,Ash,Blood,Child,Cinder,Corpse,Crystal,Dagger,Death,Demon,Devil,Doom,Eye,Fear,Finger,Fire,Foot,Ghost,Giant,Goblin,God,Gold,Hand,Head,Heart,Hero,Hope,King,Knave,Knight,Muck,Mud,Priest,Queen,Sailor,Silver,Skull,Smoke,Souls,Spear,Spirit,Stone,Sword,Thief,Troll,Warrior,Water,Witch,Wizard
 
 # ============================================================================
 # SITE TABLES
@@ -380,31 +387,31 @@ OUTPOST:
     - 12||Tower/Fort/Base
 
 UnnaturalOutpost:
-  - "{{rollTable FotF_Details.MAGIC}} outpost"
-  - "{{rollTable FotF_Details.ELEMENT}} outpost"
-  - "{{rollTable FotF_Details.ASPECT}} outpost"
+  - "{{rollTable MAGIC}} outpost"
+  - "{{rollTable ELEMENT}} outpost"
+  - "{{rollTable ASPECT}} outpost"
 
 LANDMARK:
   dice: 1d12
   entries:
-    - "1||Odd: {{pick FotF_Details.ODDITY}} landmark"
+    - "1||Odd: {{pick ODDITY}} landmark"
     - 2..4||Plant/Tree-based landmark
     - 5..7||Earth/Rock-based landmark
     - 8..9||Water-based landmark
     - 10||FACTION-based landmark
     - 11||Megalith/Obelisk/Statue
-    - "12||{{rollTable FotF_Details.MAGIC}} landmark"
+    - "12||{{rollTable MAGIC}} landmark"
 
 RESOURCE:
   dice: 1d12
   entries:
-    - "1||Odd: {{pick FotF_Details.ODDITY}} resource"
+    - "1||Odd: {{pick ODDITY}} resource"
     - 2..4||Game/Hide/Fur
     - 5..6||Timber/Clay/Stone
     - 7..8||Herb/Spice/Dye
     - 9..10||Copper/Tin/Iron
     - 11||Silver/Gold/Gems
-    - "12||{{rollTable FotF_Details.MAGIC}} resource"
+    - "12||{{rollTable MAGIC}} resource"
 
 # ============================================================================
 # FACTION TABLES
@@ -651,7 +658,7 @@ ELEMENT:
     - 11||life/light
     - 12||stars/cosmos
 
-FACTION:
+FACTIONTYPE:
   - commoner/peasant
   - criminal/corrupt
   - revolutionary/subversive

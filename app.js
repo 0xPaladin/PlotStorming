@@ -48,6 +48,7 @@ class App extends Component {
     //save to main APP
     window.app = this;
     app.html = html;
+    app.RNG = new Chance(Date.now());
   }
 
   // Lifecycle: Called whenever our component is created

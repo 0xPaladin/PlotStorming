@@ -32,7 +32,7 @@ export class ContentManager {
   //add a new piece of content
   add(opts = {}) {
     //create new content
-    const id = "content-" + Date.now();
+    const id = "content-" + this.app.RNG.hash();
     const content = {
       id: id,
       folder: opts.folder || null,
