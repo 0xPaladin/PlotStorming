@@ -28,7 +28,7 @@ class App extends Component {
     super();
     this.state = {
       tick: 0,
-      models: [],
+      models: {},
       show: null,
       chat: [],
       selected: new Map([["leftColumn", null]]),
@@ -117,8 +117,8 @@ class App extends Component {
 
     //add to history - and update
     history.push(["user", prompt], ["assistant", ""]);
-    UM.updateChat(2, history);
-    UM.updateChat(1, "");
+    UM.updateChat(3, history);
+    UM.updateChat(2, "");
 
     //add chat history
     payload.push(
@@ -229,7 +229,7 @@ class App extends Component {
   }
 
   //main page render
-  render({}, { show, selected, payload, chat }) {
+  render({}, { show, selected, payload, chat, models }) {
     //get content manager
     const CM = this.ContentManager;
     const content = CM.all.find((c) => c.id === selected.get("activeContent"));
@@ -425,13 +425,24 @@ class App extends Component {
         <div id="right-bar" class="bg-white-30 pa2">
           <div class="w-100">
             <div class="section flex items-center">
+              <span class="w-10" class="label b i black">Provider</span>
+              <select
+                value=${UM.activeChat.provider}
+                onChange=${(e) => UM.updateChat(0, e.target.value)}
+              >
+                ${Object.keys(models).map((p) =>
+                  UM.state["key" + p] !== ""
+                    ? html`<option value="${p}">${p}</option>`
+                    : "",
+                )}
+              </select>
               <span class="w-10" class="label b i black">Model</span>
               <select
                 class="w-90"
                 value=${UM.activeChat.model}
-                onChange=${(e) => UM.updateChat(0, e.target.value)}
+                onChange=${(e) => UM.updateChat(1, e.target.value)}
               >
-                ${this.state.models.map(
+                ${models[UM.activeChat.provider]?.map(
                   (m) => html`<option value=${m.id}>${m.name}</option>`,
                 )}
               </select>
@@ -456,12 +467,12 @@ class App extends Component {
               class="w-100"
               rows="6"
               value=${UM.activeChat.prompt}
-              onInput=${(e) => UM.updateChat(1, e.target.value)}
+              onInput=${(e) => UM.updateChat(2, e.target.value)}
             ></textarea>
             <div class="flex justify-between">
               <button
                 class="btn-delete"
-                onClick=${() => UM.updateChat(2, [], UM.updateChat(1, ""))}
+                onClick=${() => UM.updateChat(3, [], UM.updateChat(2, ""))}
               >
                 Clear
               </button>
