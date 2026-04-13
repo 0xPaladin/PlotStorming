@@ -17,6 +17,9 @@ import { ContentManager } from "./src/contentManager.js";
 //user manager
 import { UserManager } from "./src/userManager.js";
 
+//import generators
+import { GeneratorManager } from "./src/generatorManager.js";
+
 /*
   Declare the main App 
 */
@@ -39,14 +42,13 @@ class App extends Component {
     localStorage.setItem("lastAccess", Date.now());
 
     this.ContentManager = new ContentManager(this);
-    this.ContentManager = this.ContentManager;
-
     this.UserManager = new UserManager(this);
-    this.UserManager = this.UserManager;
+    this.GeneratorManager = new GeneratorManager(this);
 
     //save to main APP
     window.app = this;
     app.html = html;
+    app.RNG = new Chance(Date.now());
   }
 
   // Lifecycle: Called whenever our component is created
@@ -76,14 +78,20 @@ class App extends Component {
       el.innerHTML = marked.parse(content.text);
     }
 
+    //get generator result
+    if (this.state.selected.get("generatorResult")) {
+      const el = document.getElementById("generatorResult");
+      el.innerHTML = marked.parse(this.state.selected.get("generatorResult"));
+    }
+
     //query selector for ai-chat
     const chat = this.state.chat;
-    document.querySelectorAll('.chat-ai').forEach(el => {
+    document.querySelectorAll(".chat-ai").forEach((el) => {
       const text = chat[Number(el.dataset.id)][1];
       if (text === "") {
         return;
       }
-      //convert to MD 
+      //convert to MD
       el.innerHTML = marked.parse(text);
     });
   }
@@ -113,9 +121,13 @@ class App extends Component {
     UM.updateChat(1, "");
 
     //add chat history
-    payload.push(...history.filter(h => h[1] !== "").map(h => {
-      return { role: h[0], content: h[1] };
-    }));
+    payload.push(
+      ...history
+        .filter((h) => h[1] !== "")
+        .map((h) => {
+          return { role: h[0], content: h[1] };
+        }),
+    );
 
     //send to Open Router
     UM.sendPrompt(payload, null, null);
@@ -217,7 +229,7 @@ class App extends Component {
   }
 
   //main page render
-  render({ }, { show, selected, payload, chat }) {
+  render({}, { show, selected, payload, chat }) {
     //get content manager
     const CM = this.ContentManager;
     const content = CM.all.find((c) => c.id === selected.get("activeContent"));
@@ -234,9 +246,9 @@ class App extends Component {
         content: CM.all.filter((c) => c.folder === f),
       };
     });
-    const noFolderContent = CM.all.filter(
-      (c) => !c.folder || !folders[c.folder],
-    );
+    const noFolderContent = CM.all
+      .filter((c) => c.folder !== "generators")
+      .filter((c) => !c.folder || !folders[c.folder]);
     //rename
     const toRename = selected.get("rename-folder");
 
@@ -249,13 +261,13 @@ class App extends Component {
         style="cursor: move; padding: 4px; border-radius: 4px; transition: background-color 0.2s;"
       >
         <input
-          class="mr2"
+          class="${c.folder === "generators" ? "dn" : "mr2"}"
           type="checkbox"
           value=${payload.has(c.id)}
           onClick=${() =>
-          payload.has(c.id)
-            ? this.state.payload.delete(c.id)
-            : this.state.payload.add(c.id)}
+            payload.has(c.id)
+              ? this.state.payload.delete(c.id)
+              : this.state.payload.add(c.id)}
         />
         <div
           class="pointer dim"
@@ -286,26 +298,46 @@ class App extends Component {
             >
               ⚙️
             </div>
+            <div
+              class="pointer f4 tc pa2"
+              onClick=${() => this.setSelected("leftColumn", "Generators")}
+            >
+              🎲
+            </div>
           </div>
           <div
             class="${leftColumn === "Settings" ? "mw5 pa1 bg-white-50" : "dn"}"
           >
             ${UM.render()}
           </div>
-          <div class="${leftColumn === "Content" ? "pa1 bg-white-30" : "dn"}">
+          <div
+            class="${leftColumn === "Generators"
+              ? "mw5 pa1 bg-white-50"
+              : "dn"}"
+          >
+            <div class="flex" style="justify-content: flex-end;">
+              <span
+                class="pointer dim pa2"
+                onClick=${() => CM.add({ folder: "generators" })}
+                >✙</span
+              >
+            </div>
+            ${CM.generators.map((c) => contentItem(c))}
+          </div>
+          <div class="${leftColumn === "Content" ? "pa1 bg-white-50" : "dn"}">
             <div class="flex" style="justify-content: flex-end;">
               <button
                 class="bg-black-10 dim pointer"
                 onClick=${() =>
-        UM.update("folders", [...UM.folders, "New Folder"])}
+                  UM.update("folders", [...UM.folders, "New Folder"])}
               >
                 <img src="./assets/add-folder.svg" width="20" height="20" />
               </button>
             </div>
             <!-- Folders -->
             ${Object.keys(folders).map(
-          (f) =>
-            html`<div
+              (f) =>
+                html`<div
                     class="b black w-100 mv1 flex items-center justify-between"
                     style="gap: 8px;"
                     onDragOver=${(e) => this.onFolderDragOver(e)}
@@ -315,18 +347,18 @@ class App extends Component {
                       <span
                         class="f4"
                         onClick=${() =>
-                this.setSelected(`folder-${f}`, !folders[f].show)}
+                          this.setSelected(`folder-${f}`, !folders[f].show)}
                         >${folders[f].show ? "📂" : "📁"}</span
                       >
                       ${toRename === f
-                ? html`<input
+                        ? html`<input
                             type="text"
                             value=${f}
                             onBlur=${(e) => UM.renameFolder(f, e.target.value)}
                           />`
-                : html`<span
+                        : html`<span
                             onClick=${() =>
-                    this.setSelected(`folder-${f}`, !folders[f].show)}
+                              this.setSelected(`folder-${f}`, !folders[f].show)}
                             >${f}</span
                           >`}
                     </div>
@@ -360,7 +392,7 @@ class App extends Component {
                   >
                     ${(folders[f].content || []).map((c) => contentItem(c))}
                   </div>`,
-        )}
+            )}
             <!-- No Folder -->
             <div
               class="b black w-100 mv1 flex items-center"
@@ -400,18 +432,23 @@ class App extends Component {
                 onChange=${(e) => UM.updateChat(0, e.target.value)}
               >
                 ${this.state.models.map(
-          (m) => html`<option value=${m.id}>${m.name}</option>`,
-        )}
+                  (m) => html`<option value=${m.id}>${m.name}</option>`,
+                )}
               </select>
             </div>
           </div>
           <div class="chat mv1" style="flex:1;overflow-y: auto;">
             ${chat.map(
-          (d, i) => html`<div 
-            class="${d[0] === "user" ? "chat-user" : "chat-ai pointer"}" 
-            data-id=${i} 
-            onClick=${()=> d[0] !== "user" ? copyToClipboard(d[1]) : null}>${d[1]}</div>`,
-        )}
+              (d, i) =>
+                html`<div
+                  class="${d[0] === "user" ? "chat-user" : "chat-ai pointer"}"
+                  data-id=${i}
+                  onClick=${() =>
+                    d[0] !== "user" ? copyToClipboard(d[1]) : null}
+                >
+                  ${d[1]}
+                </div>`,
+            )}
           </div>
           <div class="w-100">
             <div class="b i">Prompt</div>
@@ -422,7 +459,10 @@ class App extends Component {
               onInput=${(e) => UM.updateChat(1, e.target.value)}
             ></textarea>
             <div class="flex justify-between">
-              <button class="btn-delete" onClick=${() => UM.updateChat(2, [], UM.updateChat(1, ""))}>
+              <button
+                class="btn-delete"
+                onClick=${() => UM.updateChat(2, [], UM.updateChat(1, ""))}
+              >
                 Clear
               </button>
               <button class="btn-green" onClick=${() => CM.add(UM.activeChat)}>
@@ -443,18 +483,18 @@ class App extends Component {
   Copy to Clipboard function
 */
 function copyToClipboard(text) {
-  navigator.clipboard.writeText(text)
+  navigator.clipboard
+    .writeText(text)
     .then(() => {
       window.app.UI.notify({
         message: "Copied to clipboard",
         color: "green",
       });
     })
-    .catch(err => {
+    .catch((err) => {
       console.error("Failed to copy: ", err);
     });
 }
-
 
 /*
   Handler for resizing right bar
