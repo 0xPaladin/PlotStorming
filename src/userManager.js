@@ -341,62 +341,105 @@ function UpdateChatFromAi(response, target) {
     //update last with delts
     history[last][1] += response;
     //update
-    app.UserManager.updateChat(2, history);
+    app.UserManager.updateChat(3, history);
   }
 }
-
-import OpenAi from "https://cdn.jsdelivr.net/npm/openai@6.34.0/+esm";
 
 async function getResponse(url, key, model, messages, schema, target) {
   const app = window.app;
+  try {
+    //build body
+    const body = {
+      model: model,
+      messages,
+      stream: true,
+      temperature: 1,
+      top_p: 0.7,
+    };
+    //add schema if provided
+    if (schema) {
+      body.response_format = schema;
+    }
 
-  const openai = new OpenAi({
-    apiKey: key,
-    baseURL: url,
-  });
+    //notify sent
+    app.notify({
+      title: "Prompt Sent",
+      message: "Waiting for response...",
+      color: "blue",
+    });
+    //fetch from open router
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        'HTTP-Referer': 'https://0xpaladin.github.io/PlotStorming',
+        "Content-Type": "application/json",
+      },
+      responseType: "stream",
+      body: JSON.stringify(body),
+    });
 
-  //notify sent
-  app.notify({
-    title: "Prompt Sent",
-    message: "Waiting for response...",
-    color: "blue",
-  });
+    if (!response.ok) {
+      //notify
+      app.notify({
+        title: "Error",
+        message: `Response status: ${response.status}`,
+        color: "red",
+      });
 
-  const completion = await openai.chat.completions.create({
-    model: model,
-    messages: messages,
-    temperature: 1,
-    top_p: 0.95,
-    max_tokens: 16384,
-    stream: true,
-  });
+      throw new Error(`Response status: ${response.status}`);
+    }
 
-  for await (const chunk of completion) {
-    const content = chunk.choices[0]?.delta?.content || "";
-    content !== "" ? UpdateChatFromAi(content, target) : null;
+    //stream response
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error("Response body is not readable");
+    }
+
+    //decode buffer
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    try {
+      while (true) {
+        //read buffer
+        const { done, value } = await reader.read();
+        if (done) break;
+        // Append new chunk to buffer
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process complete lines from buffer
+        while (true) {
+          //parse and decode
+          const lineEnd = buffer.indexOf("\n");
+          if (lineEnd === -1) break;
+          const line = buffer.slice(0, lineEnd).trim();
+          buffer = buffer.slice(lineEnd + 1);
+
+          //find data
+          if (line.startsWith("data: ")) {
+            const data = line.slice(6);
+            if (data === "[DONE]") break;
+            try {
+              const parsed = JSON.parse(data);
+              const content = parsed.choices[0].delta.content;
+              if (content) {
+                UpdateChatFromAi(content, target);
+              }
+            } catch (e) {
+              // Ignore invalid JSON
+            }
+          }
+        }
+      }
+    } finally {
+      reader.cancel();
+    }
+  } catch (error) {
+    console.error(error.message);
   }
 }
 
-//base NVIDIA list
-const nvidiaModels = [
-  "deepseek-ai/deepseek-r1-distill-qwen-32b",
-  "deepseek-ai/deepseek-v3.1",
-  "deepseek-ai/deepseek-v3.2",
-  "google/gemma-4-31b-it",
-  "minimaxai/minimax-m2.5",
-  "minimaxai/minimax-m2.7",
-  "mistralai/mistral-large",
-  "mistralai/mistral-small-4-119b-2603",
-  "moonshotai/kimi-k2-instruct",
-  "moonshotai/kimi-k2-thinking",
-  "moonshotai/kimi-k2.5",
-  "nvidia/nemotron-3-super-120b-a12b",
-  "openai/gpt-oss-120b",
-  "qwen/qwen3.5-397b-a17b",
-  "stepfun-ai/step-3.5-flash",
-  "z-ai/glm4.7",
-  "z-ai/glm5",
-];
 /*
   Get a list of models from OpenRouter
 */
@@ -408,12 +451,7 @@ async function getModels() {
 
   //models by provider
   const models = {
-    OpenRouter: [],
-    Nvidia: nvidiaModels
-      .map((id) => {
-        return { id, name: id };
-      })
-      .sort((a, b) => a.name.localeCompare(b.name)),
+    OpenRouter: []
   };
 
   //for each url, load models
@@ -440,139 +478,37 @@ async function getModels() {
 }
 
 /*
-  //update target
-    Promise.resolve(
-      axios.post(invokeUrl, payload, {
-        headers: headers,
-        responseType: stream ? 'stream' : 'json'
+
+Can't get NVIDIA bc of CORS
+
+//base NVIDIA list
+const nvidiaModels = [
+  "deepseek-ai/deepseek-r1-distill-qwen-32b",
+  "deepseek-ai/deepseek-v3.1",
+  "deepseek-ai/deepseek-v3.2",
+  "google/gemma-4-31b-it",
+  "minimaxai/minimax-m2.5",
+  "minimaxai/minimax-m2.7",
+  "mistralai/mistral-large",
+  "mistralai/mistral-small-4-119b-2603",
+  "moonshotai/kimi-k2-instruct",
+  "moonshotai/kimi-k2-thinking",
+  "moonshotai/kimi-k2.5",
+  "nvidia/nemotron-3-super-120b-a12b",
+  "openai/gpt-oss-120b",
+  "qwen/qwen3.5-397b-a17b",
+  "stepfun-ai/step-3.5-flash",
+  "z-ai/glm4.7",
+  "z-ai/glm5",
+];
+
+,
+    Nvidia: nvidiaModels
+      .map((id) => {
+        return { id, name: id };
       })
-    )
+      .sort((a, b) => a.name.localeCompare(b.name)),
 
-      .then(response => {
-        if (stream) {
-          response.data.on('data', (chunk) => {
-            console.log(chunk.toString());
-          });
-        } else {
-          console.log(JSON.stringify(response.data));
-        }
-      })
-      .catch(error => {
-        console.error(error);
-      });
-
-      try {
-        const response = await fetch(url, {
-          method: "GET",
-        });
-
-        //get model data
-        const data = await response.json();
-        models[key] = data.data
-          .map((m) => {
-            return { id: m.id, name: m.name };
-          })
-          .sort((a, b) => a.name.localeCompare(b.name));
-
-        key === "Nvidia" ? console.log(models) : "";
-        //push to App
-        window.app.updateState("models", models);
-      } catch (error) {
-        console.error(error.message);
-      }
-
-
-      async function getResponse(key, model, messages, schema, target) {
-        const app = window.app;
-        const url = "https://openrouter.ai/api/v1/chat/completions";
-        try {
-          //build body
-          const body = {
-            model: model,
-            messages,
-            stream: true,
-          };
-          //add schema if provided
-          if (schema) {
-            body.response_format = schema;
-          }
-
-          //notify sent
-          app.notify({
-            title: "Prompt Sent",
-            message: "Waiting for response...",
-            color: "blue",
-          });
-          //fetch from open router
-          const response = await fetch(url, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${key}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-          });
-
-          if (!response.ok) {
-            //notify
-            app.notify({
-              title: "Error",
-              message: `Response status: ${response.status}`,
-              color: "red",
-            });
-
-            throw new Error(`Response status: ${response.status}`);
-          }
-
-          //stream response
-          const reader = response.body?.getReader();
-          if (!reader) {
-            throw new Error("Response body is not readable");
-          }
-
-          //decode buffer
-          const decoder = new TextDecoder();
-          let buffer = "";
-
-          try {
-            while (true) {
-              //read buffer
-              const { done, value } = await reader.read();
-              if (done) break;
-              // Append new chunk to buffer
-              buffer += decoder.decode(value, { stream: true });
-
-              // Process complete lines from buffer
-              while (true) {
-                //parse and decode
-                const lineEnd = buffer.indexOf("\n");
-                if (lineEnd === -1) break;
-                const line = buffer.slice(0, lineEnd).trim();
-                buffer = buffer.slice(lineEnd + 1);
-
-                //find data
-                if (line.startsWith("data: ")) {
-                  const data = line.slice(6);
-                  if (data === "[DONE]") break;
-                  try {
-                    const parsed = JSON.parse(data);
-                    const content = parsed.choices[0].delta.content;
-                    if (content) {
-                      UpdateChatFromAi(content, target);
-                    }
-                  } catch (e) {
-                    // Ignore invalid JSON
-                  }
-                }
-              }
-            }
-          } finally {
-            reader.cancel();
-          }
-        } catch (error) {
-          console.error(error.message);
-        }
-      }
 
       async function getResponse(url, key, model, messages, schema, target) {
         const app = window.app;
@@ -625,4 +561,38 @@ async function getModels() {
             });
           });
       }
+
+
+      import OpenAi from "https://cdn.jsdelivr.net/npm/openai@6.34.0/+esm";
+
+async function getResponse(url, key, model, messages, schema, target) {
+  const app = window.app;
+
+  const openai = new OpenAi({
+    apiKey: key,
+    baseURL: url,
+    dangerouslyAllowBrowser: true,
+  });
+
+  //notify sent
+  app.notify({
+    title: "Prompt Sent",
+    message: "Waiting for response...",
+    color: "blue",
+  });
+
+  const completion = await openai.chat.completions.create({
+    model: model,
+    messages: messages,
+    temperature: 1,
+    top_p: 0.95,
+    max_tokens: 16384,
+    stream: true,
+  });
+
+  for await (const chunk of completion) {
+    const content = chunk.choices[0]?.delta?.content || "";
+    content !== "" ? UpdateChatFromAi(content, target) : null;
+  }
+}
 */
