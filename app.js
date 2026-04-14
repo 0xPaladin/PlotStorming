@@ -20,6 +20,9 @@ import { UserManager } from "./src/userManager.js";
 //import generators
 import { GeneratorManager } from "./src/generatorManager.js";
 
+//import maps manager
+import { MapsManager } from "./src/mapsManager.js";
+
 /*
   Declare the main App 
 */
@@ -44,6 +47,7 @@ class App extends Component {
     this.ContentManager = new ContentManager(this);
     this.UserManager = new UserManager(this);
     this.GeneratorManager = new GeneratorManager(this);
+    this.MapsManager = new MapsManager(this);
 
     //save to main APP
     window.app = this;
@@ -160,6 +164,16 @@ class App extends Component {
     e.preventDefault();
     const content = this.state.draggedContent;
     if (content) {
+      // Prevent moving maps content to other folders
+      if (content.folder === "maps" && folderName !== "maps") {
+        this.notify({
+          title: "Cannot Move",
+          message: "Maps cannot be moved to other folders",
+          color: "yellow",
+          timeout: 2000,
+        });
+        return;
+      }
       // Update content folder
       content.folder = folderName;
       this.ContentManager.save();
@@ -177,6 +191,16 @@ class App extends Component {
     e.preventDefault();
     const content = this.state.draggedContent;
     if (content) {
+      // Prevent moving maps content to no folder
+      if (content.folder === "maps") {
+        this.notify({
+          title: "Cannot Move",
+          message: "Maps cannot be removed from the Maps folder",
+          color: "yellow",
+          timeout: 2000,
+        });
+        return;
+      }
       // Remove content from folder
       content.folder = null;
       this.ContentManager.save();
@@ -229,7 +253,7 @@ class App extends Component {
   }
 
   //main page render
-  render({}, { show, selected, payload, chat, models }) {
+  render({ }, { show, selected, payload, chat, models }) {
     //get content manager
     const CM = this.ContentManager;
     const content = CM.all.find((c) => c.id === selected.get("activeContent"));
@@ -247,7 +271,7 @@ class App extends Component {
       };
     });
     const noFolderContent = CM.all
-      .filter((c) => c.folder !== "generators")
+      .filter((c) => c.folder !== "generators" && c.folder !== "maps")
       .filter((c) => !c.folder || !folders[c.folder]);
     //rename
     const toRename = selected.get("rename-folder");
@@ -255,19 +279,19 @@ class App extends Component {
     const contentItem = (c) =>
       html`<div
         class="flex"
-        draggable="true"
+        draggable=${c.folder !== "maps"}
         onDragStart=${(e) => this.onContentDragStart(c, e)}
         onDragEnd=${(e) => this.onContentDragEnd(e)}
-        style="cursor: move; padding: 4px; border-radius: 4px; transition: background-color 0.2s;"
+        style="cursor: ${c.folder === "maps" ? "default" : "move"}; padding: 4px; border-radius: 4px; transition: background-color 0.2s;"
       >
         <input
-          class="${c.folder === "generators" ? "dn" : "mr2"}"
+          class="${c.folder === "generators" || c.folder === "maps" ? "dn" : "mr2"}"
           type="checkbox"
           value=${payload.has(c.id)}
           onClick=${() =>
-            payload.has(c.id)
-              ? this.state.payload.delete(c.id)
-              : this.state.payload.add(c.id)}
+          payload.has(c.id)
+            ? this.state.payload.delete(c.id)
+            : this.state.payload.add(c.id)}
         />
         <div
           class="pointer dim"
@@ -294,15 +318,21 @@ class App extends Component {
             </div>
             <div
               class="pointer f4 tc pa2"
-              onClick=${() => this.setSelected("leftColumn", "Settings")}
+              onClick=${() => this.setSelected("leftColumn", "Maps")}
             >
-              ⚙️
+              ${leftColumn === "Maps" ? "🗺️" : "🗺️"}
             </div>
             <div
               class="pointer f4 tc pa2"
               onClick=${() => this.setSelected("leftColumn", "Generators")}
             >
               🎲
+            </div>
+            <div
+              class="pointer f4 tc pa2"
+              onClick=${() => this.setSelected("leftColumn", "Settings")}
+            >
+              ⚙️
             </div>
           </div>
           <div
@@ -312,8 +342,8 @@ class App extends Component {
           </div>
           <div
             class="${leftColumn === "Generators"
-              ? "mw5 pa1 bg-white-50"
-              : "dn"}"
+        ? "mw5 pa1 bg-white-50"
+        : "dn"}"
           >
             <div class="flex" style="justify-content: flex-end;">
               <span
@@ -324,20 +354,34 @@ class App extends Component {
             </div>
             ${CM.generators.map((c) => contentItem(c))}
           </div>
+          <div
+            class="${leftColumn === "Maps"
+        ? "mw5 pa1 bg-white-50"
+        : "dn"}"
+          >
+            <div class="flex" style="justify-content: flex-end;">
+              <span
+                class="pointer dim pa2"
+                onClick=${() => CM.add({ folder: "maps", name: "New Map", text: "containers:\n  - id: container1\n    label: \"Container 1\"\n    x: 50\n    y: 50\n    width: 200\n    height: 150\n    text: \"Map content here\"\n" })}
+                >✙</span
+              >
+            </div>
+            ${CM.maps.map((c) => contentItem(c))}
+          </div>
           <div class="${leftColumn === "Content" ? "pa1 bg-white-50" : "dn"}">
             <div class="flex" style="justify-content: flex-end;">
               <button
                 class="bg-black-10 dim pointer"
                 onClick=${() =>
-                  UM.update("folders", [...UM.folders, "New Folder"])}
+        UM.update("folders", [...UM.folders, "New Folder"])}
               >
                 <img src="./assets/add-folder.svg" width="20" height="20" />
               </button>
             </div>
             <!-- Folders -->
             ${Object.keys(folders).map(
-              (f) =>
-                html`<div
+          (f) =>
+            html`<div
                     class="b black w-100 mv1 flex items-center justify-between"
                     style="gap: 8px;"
                     onDragOver=${(e) => this.onFolderDragOver(e)}
@@ -347,18 +391,18 @@ class App extends Component {
                       <span
                         class="f4"
                         onClick=${() =>
-                          this.setSelected(`folder-${f}`, !folders[f].show)}
+                this.setSelected(`folder-${f}`, !folders[f].show)}
                         >${folders[f].show ? "📂" : "📁"}</span
                       >
                       ${toRename === f
-                        ? html`<input
+                ? html`<input
                             type="text"
                             value=${f}
                             onBlur=${(e) => UM.renameFolder(f, e.target.value)}
                           />`
-                        : html`<span
+                : html`<span
                             onClick=${() =>
-                              this.setSelected(`folder-${f}`, !folders[f].show)}
+                    this.setSelected(`folder-${f}`, !folders[f].show)}
                             >${f}</span
                           >`}
                     </div>
@@ -392,7 +436,7 @@ class App extends Component {
                   >
                     ${(folders[f].content || []).map((c) => contentItem(c))}
                   </div>`,
-            )}
+        )}
             <!-- No Folder -->
             <div
               class="b black w-100 mv1 flex items-center"
@@ -431,10 +475,10 @@ class App extends Component {
                 onChange=${(e) => UM.updateChat(0, e.target.value)}
               >
                 ${Object.keys(models).map((p) =>
-                  UM.state["key" + p] !== ""
-                    ? html`<option value="${p}">${p}</option>`
-                    : "",
-                )}
+          UM.state["key" + p] !== ""
+            ? html`<option value="${p}">${p}</option>`
+            : "",
+        )}
               </select>
               <span class="w-10" class="label b i black">Model</span>
               <select
@@ -443,23 +487,23 @@ class App extends Component {
                 onChange=${(e) => UM.updateChat(1, e.target.value)}
               >
                 ${models[UM.activeChat.provider]?.map(
-                  (m) => html`<option value=${m.id}>${m.name}</option>`,
-                )}
+          (m) => html`<option value=${m.id}>${m.name}</option>`,
+        )}
               </select>
             </div>
           </div>
           <div class="chat mv1" style="flex:1;overflow-y: auto;">
             ${chat.map(
-              (d, i) =>
-                html`<div
+          (d, i) =>
+            html`<div
                   class="${d[0] === "user" ? "chat-user" : "chat-ai pointer"}"
                   data-id=${i}
                   onClick=${() =>
-                    d[0] !== "user" ? copyToClipboard(d[1]) : null}
+                d[0] !== "user" ? copyToClipboard(d[1]) : null}
                 >
                   ${d[1]}
                 </div>`,
-            )}
+        )}
           </div>
           <div class="w-100">
             <div class="b i">Prompt</div>

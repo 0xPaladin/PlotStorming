@@ -29,6 +29,10 @@ export class ContentManager {
     return this.data.filter((d) => d.folder === "generators");
   }
 
+  get maps() {
+    return this.data.filter((d) => d.folder === "maps");
+  }
+
   //add a new piece of content
   add(opts = {}) {
     //create new content
@@ -41,8 +45,8 @@ export class ContentManager {
         ? opts.text
         : opts.history
           ? opts.history
-              .map((h) => `Role: ${h[0]}\n${h[1]}\n\n---\n\n`)
-              .join("")
+            .map((h) => `Role: ${h[0]}\n${h[1]}\n\n---\n\n`)
+            .join("")
           : "",
     };
     //add to data
@@ -142,14 +146,16 @@ export class ContentManager {
         <button
           class="btn-delete pa1"
           onClick=${() =>
-            this.delete(id, this.app.setSelected("activeContent", null))}
+        this.delete(id, this.app.setSelected("activeContent", null))}
         >
           🗑
         </button>
       </div>
       ${folder === "generators"
         ? this.app.GeneratorManager.render(content)
-        : this.contentHTML(content)}
+        : folder === "maps"
+          ? this.app.MapsManager.render(content)
+          : this.contentHTML(content)}
     </div>`;
   }
 }
